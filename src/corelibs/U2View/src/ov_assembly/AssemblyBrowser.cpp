@@ -71,6 +71,7 @@
 
 #include <U2View/ConvertAssemblyToSamDialog.h>
 
+#include "annotations/AssemblyAnnotationsArea.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyBrowserFactory.h"
 #include "AssemblyBrowserSettings.h"
@@ -1124,6 +1125,7 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), not
         ruler = new AssemblyRuler(this);
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
         variantsArea = new AssemblyVariantsArea(this);
+        annotationsArea = new AssemblyAnnotationsArea(this);
 
         QVBoxLayout *mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);
@@ -1134,15 +1136,16 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), not
         readsLayout->setMargin(0);
         readsLayout->setSpacing(0);
 
-        readsLayout->addWidget(referenceArea, 0, 0);
-        readsLayout->addWidget(consensusArea, 1, 0);
-        readsLayout->addWidget(variantsArea, 2, 0);
-        readsLayout->addWidget(ruler, 3, 0);
-        readsLayout->addWidget(coverageGraph, 4, 0);
+        readsLayout->addWidget(annotationsArea, 0, 0);
+        readsLayout->addWidget(referenceArea, 1, 0);
+        readsLayout->addWidget(consensusArea, 2, 0);
+        readsLayout->addWidget(variantsArea, 3, 0);
+        readsLayout->addWidget(ruler, 4, 0);
+        readsLayout->addWidget(coverageGraph, 5, 0);
 
-        readsLayout->addWidget(readsArea, 5, 0);
-        readsLayout->addWidget(readsVBar, 5, 1, 1, 1);
-        readsLayout->addWidget(readsHBar, 5, 0);
+        readsLayout->addWidget(readsArea, 6, 0);
+        readsLayout->addWidget(readsVBar, 6, 1, 1, 1);
+        readsLayout->addWidget(readsHBar, 6, 0);
 
         QWidget * readsLayoutWidget = new QWidget;
         readsLayoutWidget->setLayout(readsLayout);

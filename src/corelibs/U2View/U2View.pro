@@ -5,6 +5,8 @@ HEADERS += src/LicenseDialog.h \
            src/UndoRedoFramework.h \
            src/WebWindow.h \
            src/ov_assembly/AddReadsToDocumentTask.h \
+           src/ov_assembly/annotations/AssemblyAnnotationRowManager.h \
+           src/ov_assembly/annotations/AssemblyAnnotationsArea.h \
            src/ov_assembly/AssemblyBrowser.h \
            src/ov_assembly/AssemblyBrowserFactory.h \
            src/ov_assembly/AssemblyBrowserSettings.h \
@@ -274,6 +276,8 @@ SOURCES += src/LicenseDialog.cpp \
            src/UndoRedoFramework.cpp \
            src/WebWindow.cpp \
            src/ov_assembly/AddReadsToDocumentTask.cpp \
+           src/ov_assembly/annotations/AssemblyAnnotationRowManager.cpp \
+           src/ov_assembly/annotations/AssemblyAnnotationsArea.cpp \
            src/ov_assembly/AssemblyBrowser.cpp \
            src/ov_assembly/AssemblyBrowserFactory.cpp \
            src/ov_assembly/AssemblyBrowserSettings.cpp \

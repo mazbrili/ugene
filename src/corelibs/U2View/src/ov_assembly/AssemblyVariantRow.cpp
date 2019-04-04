@@ -279,7 +279,7 @@ AssemblyVariantRowManager::AssemblyVariantRowManager(AssemblyBrowserUi *_ui)
 }
 
 void AssemblyVariantRowManager::sl_trackRemoved(VariantTrackObject *objToRemove) {
-    AssemblyVariantsArea *variantsArea = ui->getvariantsArea();
+    AssemblyVariantsArea *variantsArea = ui->getVariantsArea();
 
     QLayout *layout = variantsArea->layout();
     QVBoxLayout *vertLayout = qobject_cast<QVBoxLayout*>(layout);
@@ -302,7 +302,7 @@ void AssemblyVariantRowManager::sl_trackRemoved(VariantTrackObject *objToRemove)
 }
 
 void AssemblyVariantRowManager::sl_trackAdded(VariantTrackObject *newTrackObj) {
-    AssemblyVariantsArea *variantsArea = ui->getvariantsArea();
+    AssemblyVariantsArea *variantsArea = ui->getVariantsArea();
 
     QLayout *layout = variantsArea->layout();
     QVBoxLayout *vertLayout = qobject_cast<QVBoxLayout*>(layout);
