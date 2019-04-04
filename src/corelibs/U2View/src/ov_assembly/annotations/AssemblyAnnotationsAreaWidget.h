@@ -19,29 +19,44 @@
  * MA 02110-1301, USA.
  */
 
-#include <QPainter>
-#include <QVBoxLayout>
+#ifndef _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
+#define _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
 
-#include "AssemblyBrowser.h"
-#include "AssemblyVariantRow.h"
+#include <U2View/PanView.h>
 
-#include "AssemblyAnnotationsArea.h"
+#include <QWidget>
 
 namespace U2 {
 
-AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi *ui)
-: QWidget(ui)
-{
-    this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
-    variantRowManager = new AssemblyVariantRowManager(ui);
-    QVBoxLayout *vLayout = new QVBoxLayout(this);
-    this->setLayout(vLayout);
-    vLayout->setMargin(0);
-    vLayout->setSpacing(0);
-}
+class AssemblyBrowser;
+class AssemblyBrowserUi;
+class AssemblyAnnotationsAreaRenderer;
 
-AssemblyAnnotationsArea::~AssemblyAnnotationsArea() {
-    delete variantRowManager;
-}
+
+class AssemblyAnnotationsAreaWidget : public PanView {
+    Q_OBJECT
+public:
+    AssemblyAnnotationsAreaWidget(AssemblyBrowser* browser, AssemblyBrowserUi *ui, SequenceObjectContext* ctx, QScrollBar* vBar);
+
+protected:
+    void mouseMoveEvent(QMouseEvent *e) override;
+
+signals:
+    void si_mouseMovedToPos(const QPoint&);
+
+private slots:
+    void sl_zoomPerformed();
+    void sl_offsetsChanged();
+
+private:
+    void connectSlots() const;
+    void updateVisibleRange();
+
+    AssemblyBrowser* browser;
+    AssemblyBrowserUi* browserUi;
+    AssemblyAnnotationsAreaRenderer* renderer;
+};
 
 } // U2
+
+#endif // _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_

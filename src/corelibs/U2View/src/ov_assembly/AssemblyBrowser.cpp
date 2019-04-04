@@ -38,6 +38,8 @@
 #include <U2Core/DocumentModel.h>
 #include <U2Core/FormatUtils.h>
 #include <U2Core/GObjectSelection.h>
+#include <U2Core/GObjectUtils.h>
+#include <U2Core/GUrlUtils.h>
 #include <U2Core/L10n.h>
 #include <U2Core/LoadDocumentTask.h>
 #include <U2Core/Log.h>
@@ -54,7 +56,6 @@
 #include <U2Core/U2SequenceDbi.h>
 #include <U2Core/U2Type.h>
 #include <U2Core/VariantTrackObject.h>
-#include <U2Core/GUrlUtils.h>
 
 #include <U2Formats/ConvertAssemblyToSamTask.h>
 
@@ -70,8 +71,9 @@
 #include <U2Gui/ProjectView.h>
 
 #include <U2View/ConvertAssemblyToSamDialog.h>
+#include <U2View/SequenceObjectContext.h>
 
-#include "AssemblyAnnotationsArea.h"
+#include "annotations/AssemblyAnnotationsArea.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyBrowserFactory.h"
 #include "AssemblyBrowserSettings.h"
@@ -83,6 +85,7 @@
 #include "AssemblyReadsArea.h"
 #include "AssemblyReferenceArea.h"
 #include "AssemblyRuler.h"
+#include "AssemblyVariantsArea.h"
 #include "ExportCoverageDialog.h"
 #include "ExportCoverageTask.h"
 #include "ExtractAssemblyRegionDialog.h"
@@ -231,12 +234,9 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
         setRef &= model->checkPermissions(QFile::WriteUser, setRef);
         if (setRef) {
             const DNAAlphabet* alphabet = seqObj->getAlphabet();
-            if (!alphabet->isNucleic()) {
-                return unacceptableObjectError;
-            }
-            if(model->isDbLocked(100)){
-                return tr("Internal error: database is locked");
-            }
+            CHECK(alphabet->isNucleic(), unacceptableObjectError);
+            CHECK(!model->isDbLocked(100), tr("Internal error: database is locked"));
+
             model->setReference(seqObj);
 
             U2Assembly assembly = model->getAssembly();
@@ -268,14 +268,32 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
                 addObjectToView(obj);
             }
             model->associateWithReference(refId);
+
+            addAnnotationView(seqObj);
         }
     } else if (GObjectTypes::VARIANT_TRACK == obj->getGObjectType()) {
         VariantTrackObject *trackObj = qobject_cast<VariantTrackObject*>(obj);
-        CHECK(NULL != trackObj, tr("Internal error: broken variant track object"));
+        CHECK(nullptr != trackObj, tr("Internal error: broken variant track object"));
 
         model->addTrackObject(trackObj);
         addObjectToView(obj);
         connect(model.data(), SIGNAL(si_trackRemoved(VariantTrackObject *)), SLOT(sl_trackRemoved(VariantTrackObject *)));
+    } else if (GObjectTypes::ANNOTATION_TABLE == obj->getGObjectType()) {
+        U2SequenceObject* refObj = model->getRefObj();
+        CHECK(nullptr != refObj, tr("Reference object not found"));
+
+        obj->addObjectRelation(refObj, ObjectRole_Sequence);
+        SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
+        if (nullptr == seqCtx) {
+            seqCtx = new SequenceObjectContext(refObj, this);
+            seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+            model->setSequenceObjectContext(seqCtx);
+        } else {
+            seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+        }
+        //seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+        //model->setSequenceObjectContext(seqCtx);
+        addObjectToView(obj);
     } else {
         return unacceptableObjectError;
     }
@@ -727,6 +745,7 @@ void AssemblyBrowser::sl_unassociateReference() {
     unsetRef &= model->checkPermissions(QFile::WriteUser, unsetRef);
     if (unsetRef) {
         model->dissociateReference();
+        //model->
     }
 }
 
@@ -1049,6 +1068,22 @@ void AssemblyBrowser::setReference(const Document *doc) {
     }
 }
 
+void AssemblyBrowser::addAnnotationView(U2SequenceObject* seqObj) {
+    SequenceObjectContext* seqCtx = new SequenceObjectContext(seqObj, this);
+    QList<GObject*> allLoadedAnnotations = GObjectUtils::findAllObjects(UOF_LoadedOnly,
+        GObjectTypes::ANNOTATION_TABLE);
+    QList<GObject*> annotations = GObjectUtils::findObjectsRelatedToObjectByRole(seqCtx->getSequenceObject(),
+        GObjectTypes::ANNOTATION_TABLE, ObjectRole_Sequence,
+        allLoadedAnnotations, UOF_LoadedOnly);
+    foreach(GObject* ann, annotations) {
+        CHECK_CONTINUE(GObjectTypes::ANNOTATION_TABLE == ann->getGObjectType());
+
+        seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(ann));
+        addObjectToView(ann);
+    }
+    model->setSequenceObjectContext(seqCtx);
+}
+
 void AssemblyBrowser::sl_setReference() {
     const ProjectView *projectView = AppContext::getProjectView();
     SAFE_POINT(NULL != projectView, L10N::nullPointerError("ProjectView"), );
@@ -1108,14 +1143,15 @@ void AssemblyBrowser::sl_onReferenceLoaded() {
 //==============================================================================
 
 AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_) : browser(browser_), zoomableOverview(0),
-referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), annotationsArea(0), nothingToVisualize(true)
+referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), nothingToVisualize(true)
 {
     U2OpStatusImpl os;
     if(browser->getModel()->hasReads(os)) { // has mapped reads -> show rich visualization
         setMinimumSize(300, 200);
 
-        QScrollBar * readsHBar = new QScrollBar(Qt::Horizontal);
-        QScrollBar * readsVBar = new QScrollBar(Qt::Vertical);
+        QScrollBar* readsHBar = new QScrollBar(Qt::Horizontal);
+        QScrollBar* readsVBar = new QScrollBar(Qt::Vertical);
+        QScrollBar* annotationsVBar = new QScrollBar(Qt::Vertical);
 
         zoomableOverview = new ZoomableAssemblyOverview(this, true); //zooming temporarily disabled -iefremov
         referenceArea = new AssemblyReferenceArea(this);
@@ -1123,26 +1159,32 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), annotationsArea(0), 
         coverageGraph = new AssemblyCoverageGraph(this);
         ruler = new AssemblyRuler(this);
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
-        annotationsArea = new AssemblyAnnotationsArea(this);
+        variantsArea = new AssemblyVariantsArea(this);
+        annotationsArea = new AssemblyAnnotationsArea(this, annotationsVBar);
 
         QVBoxLayout *mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);
         mainLayout->setSpacing(2);
         mainLayout->addWidget(zoomableOverview);
+        mainLayout->addWidget(annotationsArea);
 
         QGridLayout * readsLayout = new QGridLayout();
         readsLayout->setMargin(0);
         readsLayout->setSpacing(0);
 
-        readsLayout->addWidget(referenceArea, 0, 0);
-        readsLayout->addWidget(consensusArea, 1, 0);
-        readsLayout->addWidget(annotationsArea, 2, 0);
-        readsLayout->addWidget(ruler, 3, 0);
-        readsLayout->addWidget(coverageGraph, 4, 0);
+        //QLayout* annLayout = new QHBoxLayout();
+        //annLayout->addWidget(annotationsArea);
+        //readsLayout->addWidget(annotationsArea, 0, 0);
+        //readsLayout->addWidget(annotationsVBar, 0, 1, 1, 1);
+        readsLayout->addWidget(referenceArea, 1, 0);
+        readsLayout->addWidget(consensusArea, 2, 0);
+        readsLayout->addWidget(variantsArea, 3, 0);
+        readsLayout->addWidget(ruler, 4, 0);
+        readsLayout->addWidget(coverageGraph, 5, 0);
 
-        readsLayout->addWidget(readsArea, 5, 0);
-        readsLayout->addWidget(readsVBar, 5, 1, 1, 1);
-        readsLayout->addWidget(readsHBar, 5, 0);
+        readsLayout->addWidget(readsArea, 6, 0);
+        readsLayout->addWidget(readsVBar, 6, 1, 1, 1);
+        readsLayout->addWidget(readsHBar, 6, 0);
 
         QWidget * readsLayoutWidget = new QWidget;
         readsLayoutWidget->setLayout(readsLayout);
@@ -1167,11 +1209,12 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), annotationsArea(0), 
         nothingToVisualize = false;
 
         connect(readsArea, SIGNAL(si_heightChanged()), zoomableOverview, SLOT(sl_visibleAreaChanged()));
+        connect(annotationsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(readsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(referenceArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(consensusArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(coverageGraph, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
-        connect(annotationsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
+        connect(variantsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(browser, SIGNAL(si_offsetsChanged()), readsArea, SLOT(sl_hideHint()));
         connect(browser->getModel().data(), SIGNAL(si_referenceChanged()), referenceArea, SLOT(sl_redraw()));
         connect(browser->getModel().data(), SIGNAL(si_referenceChanged()), readsArea, SLOT(sl_redraw()));
