@@ -19,30 +19,29 @@
  * MA 02110-1301, USA.
  */
 
-#ifndef _ASSEMBLY_ANNOTATIONS_AREA_
-#define _ASSEMBLY_ANNOTATIONS_AREA_
+#include <QPainter>
+#include <QVBoxLayout>
 
-#include <QWidget>
+#include "AssemblyBrowser.h"
+#include "AssemblyVariantRow.h"
+
+#include "AssemblyVariantsArea.h"
 
 namespace U2 {
 
-class AssemblyBrowser;
-class AssemblyBrowserUi;
-class AssemblyVariantRowManager;
+AssemblyVariantsArea::AssemblyVariantsArea(AssemblyBrowserUi *ui)
+: QWidget(ui)
+{
+    this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
+    variantRowManager = new AssemblyVariantRowManager(ui);
+    QVBoxLayout *vLayout = new QVBoxLayout(this);
+    this->setLayout(vLayout);
+    vLayout->setMargin(0);
+    vLayout->setSpacing(0);
+}
 
-class AssemblyAnnotationsArea : public QWidget {
-    Q_OBJECT
-public:
-    AssemblyAnnotationsArea(AssemblyBrowserUi *ui);
-    virtual ~AssemblyAnnotationsArea();
-
-signals:
-    void si_mouseMovedToPos(const QPoint&);
-
-private:
-    AssemblyVariantRowManager *variantRowManager;
-};
+AssemblyVariantsArea::~AssemblyVariantsArea() {
+    delete variantRowManager;
+}
 
 } // U2
-
-#endif // _ASSEMBLY_ANNOTATIONS_AREA_

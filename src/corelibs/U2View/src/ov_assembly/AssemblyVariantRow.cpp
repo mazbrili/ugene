@@ -26,8 +26,8 @@
 #include <U2Core/U2SafePoints.h>
 #include <U2Core/VariantTrackObject.h>
 
-#include "AssemblyAnnotationsArea.h"
 #include "AssemblyBrowser.h"
+#include "AssemblyVariantsArea.h"
 
 #include "AssemblyVariantRow.h"
 
@@ -279,9 +279,9 @@ AssemblyVariantRowManager::AssemblyVariantRowManager(AssemblyBrowserUi *_ui)
 }
 
 void AssemblyVariantRowManager::sl_trackRemoved(VariantTrackObject *objToRemove) {
-    AssemblyAnnotationsArea *annsArea = ui->getAnnotationsArea();
+    AssemblyVariantsArea *variantsArea = ui->getvariantsArea();
 
-    QLayout *layout = annsArea->layout();
+    QLayout *layout = variantsArea->layout();
     QVBoxLayout *vertLayout = qobject_cast<QVBoxLayout*>(layout);
     SAFE_POINT(NULL != vertLayout, "Internal error: layout problems", );
 
@@ -302,18 +302,18 @@ void AssemblyVariantRowManager::sl_trackRemoved(VariantTrackObject *objToRemove)
 }
 
 void AssemblyVariantRowManager::sl_trackAdded(VariantTrackObject *newTrackObj) {
-    AssemblyAnnotationsArea *annsArea = ui->getAnnotationsArea();
+    AssemblyVariantsArea *variantsArea = ui->getvariantsArea();
 
-    QLayout *layout = annsArea->layout();
+    QLayout *layout = variantsArea->layout();
     QVBoxLayout *vertLayout = qobject_cast<QVBoxLayout*>(layout);
     SAFE_POINT(NULL != vertLayout, "Internal error: layout problems", );
 
-    AssemblyVariantRow *row = new AssemblyVariantRow(annsArea, newTrackObj, browser);
+    AssemblyVariantRow *row = new AssemblyVariantRow(variantsArea, newTrackObj, browser);
     vertLayout->addWidget(row);
 
     connect(browser, SIGNAL(si_zoomOperationPerformed()), row, SLOT(sl_zoomPerformed()));
     connect(browser, SIGNAL(si_offsetsChanged()), row, SLOT(sl_offsetsChanged()));
-    connect(row, SIGNAL(si_mouseMovedToPos(const QPoint &)), annsArea, SIGNAL(si_mouseMovedToPos(const QPoint &)));
+    connect(row, SIGNAL(si_mouseMovedToPos(const QPoint &)), variantsArea, SIGNAL(si_mouseMovedToPos(const QPoint &)));
     connect(row, SIGNAL(si_removeRow()), SLOT(sl_removeRow()));
 }
 

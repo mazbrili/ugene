@@ -71,7 +71,6 @@
 
 #include <U2View/ConvertAssemblyToSamDialog.h>
 
-#include "AssemblyAnnotationsArea.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyBrowserFactory.h"
 #include "AssemblyBrowserSettings.h"
@@ -83,6 +82,7 @@
 #include "AssemblyReadsArea.h"
 #include "AssemblyReferenceArea.h"
 #include "AssemblyRuler.h"
+#include "AssemblyVariantsArea.h"
 #include "ExportCoverageDialog.h"
 #include "ExportCoverageTask.h"
 #include "ExtractAssemblyRegionDialog.h"
@@ -1108,7 +1108,7 @@ void AssemblyBrowser::sl_onReferenceLoaded() {
 //==============================================================================
 
 AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_) : browser(browser_), zoomableOverview(0),
-referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), annotationsArea(0), nothingToVisualize(true)
+referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), nothingToVisualize(true)
 {
     U2OpStatusImpl os;
     if(browser->getModel()->hasReads(os)) { // has mapped reads -> show rich visualization
@@ -1123,7 +1123,7 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), annotationsArea(0), 
         coverageGraph = new AssemblyCoverageGraph(this);
         ruler = new AssemblyRuler(this);
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
-        annotationsArea = new AssemblyAnnotationsArea(this);
+        variantsArea = new AssemblyVariantsArea(this);
 
         QVBoxLayout *mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);
@@ -1136,7 +1136,7 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), annotationsArea(0), 
 
         readsLayout->addWidget(referenceArea, 0, 0);
         readsLayout->addWidget(consensusArea, 1, 0);
-        readsLayout->addWidget(annotationsArea, 2, 0);
+        readsLayout->addWidget(variantsArea, 2, 0);
         readsLayout->addWidget(ruler, 3, 0);
         readsLayout->addWidget(coverageGraph, 4, 0);
 
@@ -1171,7 +1171,7 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), annotationsArea(0), 
         connect(referenceArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(consensusArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(coverageGraph, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
-        connect(annotationsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
+        connect(variantsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(browser, SIGNAL(si_offsetsChanged()), readsArea, SLOT(sl_hideHint()));
         connect(browser->getModel().data(), SIGNAL(si_referenceChanged()), referenceArea, SLOT(sl_redraw()));
         connect(browser->getModel().data(), SIGNAL(si_referenceChanged()), readsArea, SLOT(sl_redraw()));
