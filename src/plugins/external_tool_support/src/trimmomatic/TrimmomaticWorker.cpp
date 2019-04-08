@@ -25,7 +25,6 @@
 #include <U2Core/FailTask.h>
 #include <U2Core/FileAndDirectoryUtils.h>
 #include <U2Core/GUrlUtils.h>
-#include <U2Core/GUrlUtils.h>
 #include <U2Core/L10n.h>
 #include <U2Core/MultiTask.h>
 #include <U2Core/TaskSignalMapper.h>
@@ -85,9 +84,17 @@ void TrimmomaticWorker::changeAdapters() {
     }
 }
 
-void TrimmomaticWorker::setDone() {
-    BaseWorker::setDone();
-    foreach (const QString& name, copiedAdapters) {
+bool TrimmomaticWorker::taskFinishedSuccessfully(Task* t) const {
+    if (!t->isFinished() || t->hasError() || t->isCanceled()) {
+        output->setEnded();
+        return false;
+    }
+
+    return true;
+}
+
+void TrimmomaticWorker::cleanup() {
+    foreach(const QString& name, copiedAdapters) {
         QFile adapter(name);
         adapter.remove();
     }
@@ -118,6 +125,7 @@ Task* TrimmomaticWorker::createPrepareTask(U2OpStatus& os) const {
 void TrimmomaticWorker::onPrepared(Task* task, U2OpStatus& os) {
     MultiTask *prepareTask = qobject_cast<MultiTask *>(task);
     CHECK_EXT(nullptr != prepareTask, os.setError(L10N::internalError("Unexpected prepare task")), );
+    CHECK(taskFinishedSuccessfully(prepareTask), );
 
     changeAdapters();
 }
@@ -135,6 +143,7 @@ Task* TrimmomaticWorker::createTask(const QList<Message>& messages) const {
         task->addListeners(createLogListeners());
         trimmomaticTasks << task;
     }
+    excludedUrls.clear();
 
     Task* processTrimmomatic = nullptr;
     if (!trimmomaticTasks.isEmpty()) {
@@ -147,6 +156,7 @@ Task* TrimmomaticWorker::createTask(const QList<Message>& messages) const {
 QVariantMap TrimmomaticWorker::getResult(Task* task, U2OpStatus& os) const {
     MultiTask* multiTask = qobject_cast<MultiTask*>(task);
     CHECK_EXT(nullptr != multiTask, os.setError(L10N::internalError("Unexpected task")), QVariantMap());
+    CHECK(taskFinishedSuccessfully(multiTask), QVariantMap());
 
     QVariantMap result;
     foreach(Task* multiTask, multiTask->getTasks()) {
@@ -189,37 +199,37 @@ QString TrimmomaticWorker::setAutoUrl(const QString &paramId, const QString &inp
         QString outputFileName = GUrlUtils::insertSuffix(QUrl(inputFileUrl).fileName(), fileNameSuffix);
         value = workingDir + "/" + outputFileName;
     }
-    GUrlUtils::rollFileName(value, "_");
+    value = GUrlUtils::rollFileName(value, "_", excludedUrls);
+    excludedUrls.insert(value);
     return value;
 }
 
-TrimmomaticTaskSettings TrimmomaticWorker::getSettings(const Message& message, const QString& trimmomaticWorkingDir) const {
+TrimmomaticTaskSettings TrimmomaticWorker::getSettings(const Message& message, const QString& dirForResults) const {
     TrimmomaticTaskSettings settings;
     settings.pairedReadsInput = pairedReadsInput;
     settings.generateLog = generateLog;
     settings.trimmingSteps = trimmingSteps;
     settings.numberOfThreads = numberOfThreads;
     settings.workingDirectory = context->workingDir();
-    const QString runDirectory = FileAndDirectoryUtils::createWorkingDir(context->workingDir(), FileAndDirectoryUtils::WORKFLOW_INTERNAL, "", context->workingDir());
 
     settings.inputUrl1 = message.getData().toMap()[TrimmomaticWorkerFactory::INPUT_SLOT].toString();
 
     if (!settings.pairedReadsInput) {
-        settings.seOutputUrl = setAutoUrl(TrimmomaticWorkerFactory::OUTPUT_URL_ATTR_ID, settings.inputUrl1, trimmomaticWorkingDir, SE_OUTPUT_FILE_NAME_SUFFIX);
+        settings.seOutputUrl = setAutoUrl(TrimmomaticWorkerFactory::OUTPUT_URL_ATTR_ID, settings.inputUrl1, dirForResults, SE_OUTPUT_FILE_NAME_SUFFIX);
     } else {
         settings.inputUrl2 = message.getData().toMap()[TrimmomaticWorkerFactory::PAIRED_INPUT_SLOT].toString();
 
-        settings.pairedOutputUrl1 = setAutoUrl(TrimmomaticWorkerFactory::PAIRED_URL_1_ATTR_ID, settings.inputUrl1, trimmomaticWorkingDir, PE_OUTPUT_PAIRED_FILE_NAME_SUFFIX);
-        settings.pairedOutputUrl2 = setAutoUrl(TrimmomaticWorkerFactory::PAIRED_URL_2_ATTR_ID, settings.inputUrl2, trimmomaticWorkingDir, PE_OUTPUT_PAIRED_FILE_NAME_SUFFIX);
-        settings.unpairedOutputUrl1 = setAutoUrl(TrimmomaticWorkerFactory::UNPAIRED_URL_1_ATTR_ID, settings.inputUrl1, trimmomaticWorkingDir, PE_OUTPUT_UNPAIRED_FILE_NAME_SUFFIX);
-        settings.unpairedOutputUrl2 = setAutoUrl(TrimmomaticWorkerFactory::UNPAIRED_URL_2_ATTR_ID, settings.inputUrl2, trimmomaticWorkingDir, PE_OUTPUT_UNPAIRED_FILE_NAME_SUFFIX);
+        settings.pairedOutputUrl1 = setAutoUrl(TrimmomaticWorkerFactory::PAIRED_URL_1_ATTR_ID, settings.inputUrl1, dirForResults, PE_OUTPUT_PAIRED_FILE_NAME_SUFFIX);
+        settings.pairedOutputUrl2 = setAutoUrl(TrimmomaticWorkerFactory::PAIRED_URL_2_ATTR_ID, settings.inputUrl2, dirForResults, PE_OUTPUT_PAIRED_FILE_NAME_SUFFIX);
+        settings.unpairedOutputUrl1 = setAutoUrl(TrimmomaticWorkerFactory::UNPAIRED_URL_1_ATTR_ID, settings.inputUrl1, dirForResults, PE_OUTPUT_UNPAIRED_FILE_NAME_SUFFIX);
+        settings.unpairedOutputUrl2 = setAutoUrl(TrimmomaticWorkerFactory::UNPAIRED_URL_2_ATTR_ID, settings.inputUrl2, dirForResults, PE_OUTPUT_UNPAIRED_FILE_NAME_SUFFIX);
     }
 
     if (settings.generateLog) {
         settings.logUrl = getValue<QString>(TrimmomaticWorkerFactory::LOG_URL_ATTR_ID);
         if (settings.logUrl.isEmpty()) {
             QString baseName = GUrlUtils::getPairedFastqFilesBaseName(settings.inputUrl1, settings.pairedReadsInput);
-            settings.logUrl = trimmomaticWorkingDir + "/" + baseName + LOG_FILE_NAME_ENDING;
+            settings.logUrl = dirForResults + "/" + baseName + LOG_FILE_NAME_ENDING;
         }
         settings.logUrl = GUrlUtils::rollFileName(settings.logUrl, "_");
     }

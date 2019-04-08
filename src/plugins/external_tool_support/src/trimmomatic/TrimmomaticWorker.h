@@ -22,8 +22,8 @@
 #ifndef _U2_TRIMMOMATIC_WORKER_H_
 #define _U2_TRIMMOMATIC_WORKER_H_
 
-#include <U2Lang/LocalDomain.h>
 #include <U2Lang/BaseDatasetWorker.h>
+#include <U2Lang/LocalDomain.h>
 
 #include "TrimmomaticTask.h"
 
@@ -35,8 +35,8 @@ class TrimmomaticWorker : public BaseDatasetWorker {
 public:
     TrimmomaticWorker(Actor *actor);
 
-    void init();
-    void setDone();
+    void init() override;
+    void cleanup() override;
 
 protected:
     Task* createPrepareTask(U2OpStatus& os) const override;
@@ -46,7 +46,7 @@ protected:
     QVariantMap getResult(Task* task, U2OpStatus& os) const override;
 
 private:
-    TrimmomaticTaskSettings getSettings(const Message& message, const QString& trimmomaticWorkingDir) const;
+    TrimmomaticTaskSettings getSettings(const Message& message, const QString& dirForResults) const;
 
     // Set a value of an URL parameter that can be "Auto":
     // use the specified value if available or, if it is empty,
@@ -56,8 +56,10 @@ private:
     QString setAutoUrl(const QString &paramId, const QString &inputFile, const QString &workingDir, const QString &fileNameSuffix) const;
     QPair<QString, QString> getAbsoluteAndCopiedPathFromStep(const QString& trimmingStep) const;
     void changeAdapters();
+    bool taskFinishedSuccessfully(Task* t) const;
 
     mutable QStringList copiedAdapters;
+    mutable QSet<QString> excludedUrls;
 
     bool pairedReadsInput;
     bool generateLog;
