@@ -56,7 +56,6 @@ private:
     QString setAutoUrl(const QString &paramId, const QString &inputFile, const QString &workingDir, const QString &fileNameSuffix) const;
     QPair<QString, QString> getAbsoluteAndCopiedPathFromStep(const QString& trimmingStep) const;
     void changeAdapters();
-    bool taskFinishedSuccessfully(Task* t) const;
 
     mutable QStringList copiedAdapters;
     mutable QSet<QString> excludedUrls;

@@ -84,15 +84,6 @@ void TrimmomaticWorker::changeAdapters() {
     }
 }
 
-bool TrimmomaticWorker::taskFinishedSuccessfully(Task* t) const {
-    if (!t->isFinished() || t->hasError() || t->isCanceled()) {
-        output->setEnded();
-        return false;
-    }
-
-    return true;
-}
-
 void TrimmomaticWorker::cleanup() {
     foreach(const QString& name, copiedAdapters) {
         QFile adapter(name);
@@ -125,7 +116,6 @@ Task* TrimmomaticWorker::createPrepareTask(U2OpStatus& os) const {
 void TrimmomaticWorker::onPrepared(Task* task, U2OpStatus& os) {
     MultiTask *prepareTask = qobject_cast<MultiTask *>(task);
     CHECK_EXT(nullptr != prepareTask, os.setError(L10N::internalError("Unexpected prepare task")), );
-    CHECK(taskFinishedSuccessfully(prepareTask), );
 
     changeAdapters();
 }
@@ -156,7 +146,6 @@ Task* TrimmomaticWorker::createTask(const QList<Message>& messages) const {
 QVariantMap TrimmomaticWorker::getResult(Task* task, U2OpStatus& os) const {
     MultiTask* multiTask = qobject_cast<MultiTask*>(task);
     CHECK_EXT(nullptr != multiTask, os.setError(L10N::internalError("Unexpected task")), QVariantMap());
-    CHECK(taskFinishedSuccessfully(multiTask), QVariantMap());
 
     QVariantMap result;
     foreach(Task* multiTask, multiTask->getTasks()) {
