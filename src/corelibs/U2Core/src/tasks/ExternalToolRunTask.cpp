@@ -142,7 +142,7 @@ void ExternalToolRunTask::run() {
         } else if (status == QProcess::NormalExit && exitCode != EXIT_SUCCESS && !hasError()) {
             QString error = parseStandartOutputFile();
             setError(error.isEmpty() ? tr("%1 tool exited with code %2").arg(toolName).arg(exitCode) : error);
-        } else if (status == QProcess::NormalExit && exitCode == EXIT_SUCCESS) {
+        } else if (status == QProcess::NormalExit && exitCode == EXIT_SUCCESS && !hasError()) {
             algoLog.details(tr("Tool %1 finished successfully").arg(toolName));
         }
     }
@@ -284,7 +284,7 @@ void ExternalToolLogParser::parseOutput(const QString &partOfLog) {
 }
 
 void ExternalToolLogParser::parseErrOutput(const QString &partOfLog) {
-    lastPartOfLog = partOfLog.split(QChar('\n'));
+    lastPartOfLog = partOfLog.split(QChar('\r?\n'));
     lastPartOfLog.first() = lastErrLine + lastPartOfLog.first();
     //It's a possible situation, that one message will be processed twice
     lastErrLine = lastPartOfLog.last();
