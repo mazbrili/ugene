@@ -133,7 +133,6 @@ Task* TrimmomaticWorker::createTask(const QList<Message>& messages) const {
         task->addListeners(createLogListeners());
         trimmomaticTasks << task;
     }
-    excludedUrls.clear();
 
     Task* processTrimmomatic = nullptr;
     if (!trimmomaticTasks.isEmpty()) {
