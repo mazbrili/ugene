@@ -33,6 +33,7 @@
 #include <U2Core/UserApplicationsSettings.h>
 
 #include <QDir>
+#include <QRegularExpression>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -274,7 +275,7 @@ ExternalToolLogParser::ExternalToolLogParser() {
 }
 
 void ExternalToolLogParser::parseOutput(const QString &partOfLog) {
-    lastPartOfLog = partOfLog.split(QChar('\n'));
+    lastPartOfLog = partOfLog.split(QRegularExpression("\\r|\\n"));
     lastPartOfLog.first() = lastLine + lastPartOfLog.first();
     //It's a possible situation, that one message will be processed twice
     lastLine = lastPartOfLog.last();
@@ -284,7 +285,7 @@ void ExternalToolLogParser::parseOutput(const QString &partOfLog) {
 }
 
 void ExternalToolLogParser::parseErrOutput(const QString &partOfLog) {
-    lastPartOfLog = partOfLog.split(QChar('\r?\n'));
+    lastPartOfLog = partOfLog.split(QRegularExpression("\\r|\\n"));
     lastPartOfLog.first() = lastErrLine + lastPartOfLog.first();
     //It's a possible situation, that one message will be processed twice
     lastErrLine = lastPartOfLog.last();

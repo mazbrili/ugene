@@ -80,6 +80,11 @@ void FastQCParser::setLastError(const QString &value) {
     ExternalToolLogParser::setLastError(value);
     ioLog.details(tr("FastQC failed to process input file '%1'. Make sure each read takes exactly four lines.")
                       .arg(inputFile));
+    foreach(const QString& buf, lastPartOfLog) {
+        CHECK_CONTINUE(!buf.isEmpty());
+
+        ioLog.trace(buf);
+    }
 }
 
 bool FastQCParser::isCommonError(const QString& err)  const {
