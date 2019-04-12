@@ -23,25 +23,25 @@
 #include <QVBoxLayout>
 
 #include "../AssemblyBrowser.h"
-#include "AssemblyAnnotationRowManager.h"
+#include "AssemblyAnnotationsRenderArea.h"
 
 #include "AssemblyAnnotationsArea.h"
 
 namespace U2 {
 
-AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi *ui)
-: QWidget(ui)
-{
+AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi *ui, SequenceObjectContext* ctx)
+    : PanView(ui, ctx) {
     this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
-    variantRowManager = new AssemblyAnnotationRowManager(ui);
+    //variantRowManager = new AssemblyAnnotationRowManager(ui);
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     this->setLayout(vLayout);
     vLayout->setMargin(0);
     vLayout->setSpacing(0);
+
 }
 
 AssemblyAnnotationsArea::~AssemblyAnnotationsArea() {
-    delete variantRowManager;
+   // delete variantRowManager;
 }
 
 } // U2

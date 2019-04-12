@@ -1125,7 +1125,7 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), not
         ruler = new AssemblyRuler(this);
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
         variantsArea = new AssemblyVariantsArea(this);
-        annotationsArea = new AssemblyAnnotationsArea(this);
+        //annotationsArea = new AssemblyAnnotationsArea(this);
 
         QVBoxLayout *mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);
