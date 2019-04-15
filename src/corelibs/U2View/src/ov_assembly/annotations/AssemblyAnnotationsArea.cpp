@@ -19,29 +19,57 @@
  * MA 02110-1301, USA.
  */
 
-#include <QPainter>
-#include <QVBoxLayout>
+#include <QSharedPointer>
+
+#include <U2Core/U2SafePoints.h>
+
+#include <U2View/SequenceObjectContext.h>
 
 #include "../AssemblyBrowser.h"
-#include "AssemblyAnnotationsRenderArea.h"
+#include "../AssemblyModel.h"
 
 #include "AssemblyAnnotationsArea.h"
+#include "AssemblyAnnotationsAreaWidget.h"
 
 namespace U2 {
 
-AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi *ui, SequenceObjectContext* ctx)
-    : PanView(ui, ctx) {
+AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui)
+                        : browserUi(_ui),
+                          seqCtx(nullptr) {
     this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
-    //variantRowManager = new AssemblyAnnotationRowManager(ui);
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     this->setLayout(vLayout);
     vLayout->setMargin(0);
     vLayout->setSpacing(0);
-
+    connectSignals();
 }
 
-AssemblyAnnotationsArea::~AssemblyAnnotationsArea() {
-   // delete variantRowManager;
+void AssemblyAnnotationsArea::sl_contextChanged(SequenceObjectContext* ctx) {
+    SAFE_POINT(nullptr != ctx, tr("Sequence Object Context is absent"), );
+    seqCtx = ctx;
+
+    AssemblyAnnotationsArea* annotatiomnArea = browserUi->getAnnotationsArea();
+    SAFE_POINT(nullptr != annotatiomnArea, tr("Assembly Annotations Area widget is missed"), );
+
+    QLayout *layout = annotatiomnArea->layout();
+    QVBoxLayout *vertLayout = qobject_cast<QVBoxLayout*>(layout);
+    SAFE_POINT(nullptr != vertLayout, tr("Internal error: layout problems"), );
+
+    AssemblyBrowser* browser = browserUi->getWindow();
+    SAFE_POINT(nullptr != browser, tr("Assembly Browser is missed"), );
+
+    AssemblyAnnotationsAreaWidget* widget = new AssemblyAnnotationsAreaWidget(browser, browserUi, seqCtx);
+    vertLayout->addWidget(widget);
+    //ctx->getA
+}
+
+void AssemblyAnnotationsArea::connectSignals() {
+    SAFE_POINT(nullptr != browserUi, tr("Assembly browser widget is missed"), );
+
+    AssemblyModel* model = browserUi->getModel().data();
+    SAFE_POINT(nullptr != model, tr("Annotation model is missed"), );
+
+    connect(model, SIGNAL(si_contectChanged(SequenceObjectContext*)), SLOT(sl_contextChanged(SequenceObjectContext*)));
 }
 
 } // U2

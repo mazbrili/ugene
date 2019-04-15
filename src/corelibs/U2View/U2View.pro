@@ -7,6 +7,7 @@ HEADERS += src/LicenseDialog.h \
            src/ov_assembly/AddReadsToDocumentTask.h \
            src/ov_assembly/annotations/AssemblyAnnotationsArea.h \
            src/ov_assembly/annotations/AssemblyAnnotationsAreaRenderer.h \
+           src/ov_assembly/annotations/AssemblyAnnotationsAreaWidget.h \
            src/ov_assembly/annotations/AssemblyAnnotationsRenderArea.h \
            src/ov_assembly/annotations/AssemblyAnnotationsRenderAreaFactory.h \
            src/ov_assembly/AssemblyBrowser.h \
@@ -280,6 +281,7 @@ SOURCES += src/LicenseDialog.cpp \
            src/ov_assembly/AddReadsToDocumentTask.cpp \
            src/ov_assembly/annotations/AssemblyAnnotationsArea.cpp \
            src/ov_assembly/annotations/AssemblyAnnotationsAreaRenderer.cpp \
+           src/ov_assembly/annotations/AssemblyAnnotationsAreaWidget.cpp \
            src/ov_assembly/annotations/AssemblyAnnotationsRenderArea.cpp \
            src/ov_assembly/annotations/AssemblyAnnotationsRenderAreaFactory.cpp \
            src/ov_assembly/AssemblyBrowser.cpp \

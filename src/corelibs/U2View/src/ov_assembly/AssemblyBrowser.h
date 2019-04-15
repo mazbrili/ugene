@@ -262,6 +262,7 @@ public:
 
     QColor getCoverageColor(double grayCoeff);
 
+
 private:
     AssemblyBrowser*          browser;
     ZoomableAssemblyOverview* zoomableOverview;

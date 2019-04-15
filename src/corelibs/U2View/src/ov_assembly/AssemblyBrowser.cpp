@@ -38,6 +38,8 @@
 #include <U2Core/DocumentModel.h>
 #include <U2Core/FormatUtils.h>
 #include <U2Core/GObjectSelection.h>
+#include <U2Core/GObjectUtils.h>
+#include <U2Core/GUrlUtils.h>
 #include <U2Core/L10n.h>
 #include <U2Core/LoadDocumentTask.h>
 #include <U2Core/Log.h>
@@ -54,7 +56,6 @@
 #include <U2Core/U2SequenceDbi.h>
 #include <U2Core/U2Type.h>
 #include <U2Core/VariantTrackObject.h>
-#include <U2Core/GUrlUtils.h>
 
 #include <U2Formats/ConvertAssemblyToSamTask.h>
 
@@ -70,6 +71,7 @@
 #include <U2Gui/ProjectView.h>
 
 #include <U2View/ConvertAssemblyToSamDialog.h>
+#include <U2View/SequenceObjectContext.h>
 
 #include "annotations/AssemblyAnnotationsArea.h"
 #include "AssemblyBrowser.h"
@@ -232,12 +234,9 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
         setRef &= model->checkPermissions(QFile::WriteUser, setRef);
         if (setRef) {
             const DNAAlphabet* alphabet = seqObj->getAlphabet();
-            if (!alphabet->isNucleic()) {
-                return unacceptableObjectError;
-            }
-            if(model->isDbLocked(100)){
-                return tr("Internal error: database is locked");
-            }
+            CHECK(alphabet->isNucleic(), unacceptableObjectError);
+            CHECK(!model->isDbLocked(100), tr("Internal error: database is locked"));
+
             model->setReference(seqObj);
 
             U2Assembly assembly = model->getAssembly();
@@ -269,6 +268,19 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
                 addObjectToView(obj);
             }
             model->associateWithReference(refId);
+
+            SequenceObjectContext* seqCtx = new SequenceObjectContext(seqObj, this);
+            QList<GObject*> allLoadedAnnotations = GObjectUtils::findAllObjects(UOF_LoadedOnly,
+                                                                GObjectTypes::ANNOTATION_TABLE);
+            QList<GObject*> annotations = GObjectUtils::findObjectsRelatedToObjectByRole(seqCtx->getSequenceObject(),
+                                                GObjectTypes::ANNOTATION_TABLE, ObjectRole_Sequence,
+                                                allLoadedAnnotations, UOF_LoadedOnly);
+            foreach(GObject* ann, annotations) {
+                CHECK_CONTINUE(GObjectTypes::ANNOTATION_TABLE == ann->getGObjectType());
+
+                seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(ann));
+            }
+            model->setSequenceObjectContext(seqCtx);
         }
     } else if (GObjectTypes::VARIANT_TRACK == obj->getGObjectType()) {
         VariantTrackObject *trackObj = qobject_cast<VariantTrackObject*>(obj);
@@ -277,6 +289,10 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
         model->addTrackObject(trackObj);
         addObjectToView(obj);
         connect(model.data(), SIGNAL(si_trackRemoved(VariantTrackObject *)), SLOT(sl_trackRemoved(VariantTrackObject *)));
+    } else if (GObjectTypes::ANNOTATION_TABLE == obj->getGObjectType()) {
+
+
+        int i = 0;
     } else {
         return unacceptableObjectError;
     }
@@ -1125,7 +1141,7 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), not
         ruler = new AssemblyRuler(this);
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
         variantsArea = new AssemblyVariantsArea(this);
-        //annotationsArea = new AssemblyAnnotationsArea(this);
+        annotationsArea = new AssemblyAnnotationsArea(this);
 
         QVBoxLayout *mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);

@@ -61,12 +61,12 @@ namespace U2 {
 const QByteArray AssemblyModel::COVERAGE_STAT_ATTRIBUTE_NAME(U2BaseAttributeName::coverage_statistics.toLatin1());
 
 AssemblyModel::AssemblyModel(const DbiConnection& dbiCon_) :
-    cachedModelLength(NO_VAL), cachedModelHeight(NO_VAL), assemblyDbi(NULL), dbiHandle(dbiCon_),
-    loadingReference(false), refObj(NULL), md5Retrieved(false), cachedReadsNumber(NO_VAL), speciesRetrieved(false),
+    cachedModelLength(NO_VAL), cachedModelHeight(NO_VAL), assemblyDbi(nullptr), dbiHandle(dbiCon_),
+    loadingReference(false), refObj(nullptr), ctx(nullptr), md5Retrieved(false), cachedReadsNumber(NO_VAL), speciesRetrieved(false),
     uriRetrieved(false)
 {
     Project * prj = AppContext::getProject();
-    if (prj != NULL) {
+    if (prj != nullptr) {
         connect(prj, SIGNAL(si_documentRemoved(Document*)), SLOT(sl_docRemoved(Document*)));
         connect(prj, SIGNAL(si_documentAdded(Document*)), SLOT(sl_docAdded(Document*)));
     }
@@ -77,7 +77,7 @@ AssemblyModel::~AssemblyModel() {
 }
 
 void AssemblyModel::unsetReference() {
-    refObj = NULL;
+    refObj = nullptr;
 }
 
 void AssemblyModel::dissociateReference() {
@@ -99,7 +99,7 @@ void AssemblyModel::dissociateReference() {
 }
 
 bool AssemblyModel::isEmpty() const {
-    return assemblyDbi == NULL;
+    return assemblyDbi == nullptr;
 }
 
 QList<U2AssemblyRead> AssemblyModel::getReadsFromAssembly(const U2Region & r, qint64 minRow, qint64 maxRow, U2OpStatus & os) {
@@ -469,7 +469,7 @@ void AssemblyModel::sl_referenceLoaded() {
 }
 
 bool AssemblyModel::hasReference() const {
-    return refObj != NULL;
+    return refObj != nullptr;
 }
 
 bool AssemblyModel::referenceAssociated() const {
@@ -478,7 +478,7 @@ bool AssemblyModel::referenceAssociated() const {
 
 void AssemblyModel::setReference(U2SequenceObject* seqObj) {
     refObj = seqObj;
-    if(seqObj != NULL) {
+    if (seqObj != nullptr) {
         connect(seqObj->getDocument(), SIGNAL(si_objectRemoved(GObject*)), SLOT(sl_referenceObjRemoved(GObject*)));
     }
     emit si_referenceChanged();
@@ -487,6 +487,14 @@ void AssemblyModel::setReference(U2SequenceObject* seqObj) {
 QByteArray AssemblyModel::getReferenceRegion(const U2Region& region, U2OpStatus& os) {
     SAFE_POINT_EXT(refObj, os.setError(tr("Reference document is not ready!")), QByteArray());
     return refObj->getSequenceData(region);
+}
+
+void AssemblyModel::setSequenceObjectContext(SequenceObjectContext* seqCtx) {
+    ctx = seqCtx;
+    if (nullptr != ctx) {
+
+    }
+    emit si_contectChanged(ctx);
 }
 
 QByteArray AssemblyModel::getReferenceRegionOrEmpty(const U2Region& region) {
@@ -505,7 +513,7 @@ QByteArray AssemblyModel::getReferenceRegionOrEmpty(const U2Region& region) {
 
 void AssemblyModel::associateWithReference(const U2DataId& refId) {
     assert(hasReference());
-    assert(assemblyDbi != NULL);
+    assert(assemblyDbi != nullptr);
     // save cross reference id to assembly
 
     assembly.referenceId = refId;

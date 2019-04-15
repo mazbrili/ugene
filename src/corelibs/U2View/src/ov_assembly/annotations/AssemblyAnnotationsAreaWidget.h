@@ -19,37 +19,36 @@
  * MA 02110-1301, USA.
  */
 
-#ifndef _ASSEMBLY_ANNOTATIONS_AREA_
-#define _ASSEMBLY_ANNOTATIONS_AREA_
+#ifndef _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
+#define _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
 
-//#include <U2View/PanView.h>
+#include <U2View/PanView.h>
 
 #include <QWidget>
 
 namespace U2 {
 
+class AssemblyBrowser;
 class AssemblyBrowserUi;
-class SequenceObjectContext;
+class AssemblyAnnotationsAreaRenderer;
 
 
-class AssemblyAnnotationsArea : public QWidget {
+class AssemblyAnnotationsAreaWidget : public PanView {
     Q_OBJECT
 public:
-    AssemblyAnnotationsArea(AssemblyBrowserUi *ui);
+    AssemblyAnnotationsAreaWidget(AssemblyBrowser* browser, AssemblyBrowserUi *ui, SequenceObjectContext* ctx);
+    virtual ~AssemblyAnnotationsAreaWidget();
 
-//signals:
-//    void si_mouseMovedToPos(const QPoint&);
-
-public slots:
-    void sl_contextChanged(SequenceObjectContext* ctx);
+signals:
+    void si_mouseMovedToPos(const QPoint&);
 
 private:
-    void connectSignals();
-
+    AssemblyBrowser* browser;
     AssemblyBrowserUi* browserUi;
-    SequenceObjectContext* seqCtx;
+    AssemblyAnnotationsAreaRenderer* renderer;
+    //AssemblyAnnotationRowManager *variantRowManager;
 };
 
 } // U2
 
-#endif // _ASSEMBLY_ANNOTATIONS_AREA_
+#endif // _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
