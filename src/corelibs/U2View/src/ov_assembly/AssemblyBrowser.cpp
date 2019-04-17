@@ -284,15 +284,18 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
         }
     } else if (GObjectTypes::VARIANT_TRACK == obj->getGObjectType()) {
         VariantTrackObject *trackObj = qobject_cast<VariantTrackObject*>(obj);
-        CHECK(NULL != trackObj, tr("Internal error: broken variant track object"));
+        CHECK(nullptr != trackObj, tr("Internal error: broken variant track object"));
 
         model->addTrackObject(trackObj);
         addObjectToView(obj);
         connect(model.data(), SIGNAL(si_trackRemoved(VariantTrackObject *)), SLOT(sl_trackRemoved(VariantTrackObject *)));
     } else if (GObjectTypes::ANNOTATION_TABLE == obj->getGObjectType()) {
+        U2SequenceObject* refObj = model->getRefObj();
+        CHECK(nullptr != refObj, tr("Reference object not found"));
 
-
-        int i = 0;
+        SequenceObjectContext* seqCtx = new SequenceObjectContext(refObj, this);
+        seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+        model->setSequenceObjectContext(seqCtx);
     } else {
         return unacceptableObjectError;
     }
@@ -1131,8 +1134,9 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), not
     if(browser->getModel()->hasReads(os)) { // has mapped reads -> show rich visualization
         setMinimumSize(300, 200);
 
-        QScrollBar * readsHBar = new QScrollBar(Qt::Horizontal);
-        QScrollBar * readsVBar = new QScrollBar(Qt::Vertical);
+        QScrollBar* readsHBar = new QScrollBar(Qt::Horizontal);
+        QScrollBar* readsVBar = new QScrollBar(Qt::Vertical);
+        QScrollBar* annotationsVBar = new QScrollBar(Qt::Vertical);
 
         zoomableOverview = new ZoomableAssemblyOverview(this, true); //zooming temporarily disabled -iefremov
         referenceArea = new AssemblyReferenceArea(this);
@@ -1141,18 +1145,22 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), not
         ruler = new AssemblyRuler(this);
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
         variantsArea = new AssemblyVariantsArea(this);
-        annotationsArea = new AssemblyAnnotationsArea(this);
+        annotationsArea = new AssemblyAnnotationsArea(this, annotationsVBar);
 
         QVBoxLayout *mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);
         mainLayout->setSpacing(2);
         mainLayout->addWidget(zoomableOverview);
+        mainLayout->addWidget(annotationsArea);
 
         QGridLayout * readsLayout = new QGridLayout();
         readsLayout->setMargin(0);
         readsLayout->setSpacing(0);
 
-        readsLayout->addWidget(annotationsArea, 0, 0);
+        //QLayout* annLayout = new QHBoxLayout();
+        //annLayout->addWidget(annotationsArea);
+        //readsLayout->addWidget(annotationsArea, 0, 0);
+        //readsLayout->addWidget(annotationsVBar, 0, 1, 1, 1);
         readsLayout->addWidget(referenceArea, 1, 0);
         readsLayout->addWidget(consensusArea, 2, 0);
         readsLayout->addWidget(variantsArea, 3, 0);
@@ -1186,6 +1194,7 @@ referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), not
         nothingToVisualize = false;
 
         connect(readsArea, SIGNAL(si_heightChanged()), zoomableOverview, SLOT(sl_visibleAreaChanged()));
+        connect(annotationsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(readsArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(referenceArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));
         connect(consensusArea, SIGNAL(si_mouseMovedToPos(const QPoint&)), ruler, SLOT(sl_handleMoveToPos(const QPoint&)));

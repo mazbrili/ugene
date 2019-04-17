@@ -36,13 +36,23 @@ class AssemblyAnnotationsAreaRenderer;
 class AssemblyAnnotationsAreaWidget : public PanView {
     Q_OBJECT
 public:
-    AssemblyAnnotationsAreaWidget(AssemblyBrowser* browser, AssemblyBrowserUi *ui, SequenceObjectContext* ctx);
-    virtual ~AssemblyAnnotationsAreaWidget();
+    AssemblyAnnotationsAreaWidget(AssemblyBrowser* browser, AssemblyBrowserUi *ui, SequenceObjectContext* ctx, QScrollBar* vBar);
+
+protected:
+    //void pack() override;
+    void mouseMoveEvent(QMouseEvent *e) override;
 
 signals:
     void si_mouseMovedToPos(const QPoint&);
 
+private slots:
+    void sl_zoomPerformed();
+    void sl_offsetsChanged();
+
 private:
+    void connectSlots() const;
+    void updateVisibleRange();
+
     AssemblyBrowser* browser;
     AssemblyBrowserUi* browserUi;
     AssemblyAnnotationsAreaRenderer* renderer;

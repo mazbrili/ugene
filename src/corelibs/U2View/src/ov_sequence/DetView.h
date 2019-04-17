@@ -106,6 +106,8 @@ protected:
     void updateVerticalScrollBar();
     void updateVerticalScrollBarPosition();
 
+    int getSliderPosition() const override;
+
     QAction*        showComplementAction;
     QAction*        showTranslationAction;
     QAction*        wrapSequenceAction;

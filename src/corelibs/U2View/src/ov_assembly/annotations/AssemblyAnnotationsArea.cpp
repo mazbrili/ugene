@@ -33,9 +33,10 @@
 
 namespace U2 {
 
-AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui)
+    AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui, QScrollBar* _vBar)
                         : browserUi(_ui),
-                          seqCtx(nullptr) {
+                          seqCtx(nullptr),
+                          vBar(_vBar) {
     this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     this->setLayout(vLayout);
@@ -58,7 +59,7 @@ void AssemblyAnnotationsArea::sl_contextChanged(SequenceObjectContext* ctx) {
     AssemblyBrowser* browser = browserUi->getWindow();
     SAFE_POINT(nullptr != browser, tr("Assembly Browser is missed"), );
 
-    AssemblyAnnotationsAreaWidget* widget = new AssemblyAnnotationsAreaWidget(browser, browserUi, seqCtx);
+    AssemblyAnnotationsAreaWidget* widget = new AssemblyAnnotationsAreaWidget(browser, browserUi, seqCtx, vBar);
     vertLayout->addWidget(widget);
     //ctx->getA
 }

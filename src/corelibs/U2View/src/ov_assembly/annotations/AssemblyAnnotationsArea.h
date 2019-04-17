@@ -25,6 +25,7 @@
 //#include <U2View/PanView.h>
 
 #include <QWidget>
+#include <QScrollBar>
 
 namespace U2 {
 
@@ -35,7 +36,7 @@ class SequenceObjectContext;
 class AssemblyAnnotationsArea : public QWidget {
     Q_OBJECT
 public:
-    AssemblyAnnotationsArea(AssemblyBrowserUi *ui);
+    AssemblyAnnotationsArea(AssemblyBrowserUi* ui, QScrollBar* vBar);
 
 //signals:
 //    void si_mouseMovedToPos(const QPoint&);
@@ -43,11 +44,15 @@ public:
 public slots:
     void sl_contextChanged(SequenceObjectContext* ctx);
 
+signals:
+    void si_mouseMovedToPos(const QPoint&);
+
 private:
     void connectSignals();
 
     AssemblyBrowserUi* browserUi;
     SequenceObjectContext* seqCtx;
+    QScrollBar* vBar;
 };
 
 } // U2

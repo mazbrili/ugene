@@ -40,5 +40,15 @@ AssemblyAnnotationsRenderArea::AssemblyAnnotationsRenderArea
                               : PanViewRenderArea(d, renderer),
                                 ui(_ui) {}
 
+void AssemblyAnnotationsRenderArea::paintEvent(QPaintEvent *e) {
+    AssemblyBrowser* browser = ui->getWindow();
+    SAFE_POINT(nullptr != browser, tr("Assembly Browser is missed"), );
+
+    if (browser->areCellsVisible()) {
+        PanViewRenderArea::paintEvent(e);
+    } else  {
+        cachedView->fill(Qt::transparent);
+    }
+}
 
 } // U2

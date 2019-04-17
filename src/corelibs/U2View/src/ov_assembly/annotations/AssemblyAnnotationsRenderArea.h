@@ -43,6 +43,8 @@ public:
     AssemblyAnnotationsRenderArea
         (AssemblyBrowserUi *ui, PanView *d, PanViewRenderer *renderer);
 
+protected:
+    void paintEvent(QPaintEvent *e) override;
 
 private:
     AssemblyBrowserUi *ui;

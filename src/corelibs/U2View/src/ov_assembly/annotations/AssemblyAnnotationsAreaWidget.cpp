@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QVBoxLayout>
 
+#include <U2Gui/GScrollBar.h>
+
 #include "../AssemblyBrowser.h"
 #include "AssemblyAnnotationsArea.h"
 #include "AssemblyAnnotationsAreaRenderer.h"
@@ -35,7 +37,8 @@ namespace U2 {
 AssemblyAnnotationsAreaWidget::AssemblyAnnotationsAreaWidget
                     (AssemblyBrowser* _browser,
                      AssemblyBrowserUi* _ui,
-                     SequenceObjectContext* _ctx)
+                     SequenceObjectContext* _ctx,
+                     QScrollBar* _vBar)
                         : PanView(_ui,
                                   _ctx,
                                   AssemblyAnnotationsRenderAreaFactory(_ui,
@@ -44,11 +47,62 @@ AssemblyAnnotationsAreaWidget::AssemblyAnnotationsAreaWidget
                           browserUi(_ui),
                           renderer(dynamic_cast<AssemblyAnnotationsAreaRenderer*>(getRenderArea()->getRenderer())) {
     setLocalToolbarVisible(false);
+    sl_toggleMainRulerVisibility(false);
 
+    scrollBar->hide();
+    //rowBar->hide();
+    QGridLayout* girdLayout = qobject_cast<QGridLayout*>(contentWidget->layout());
+    //int h = rowBar->height();
+    //girdLayout->removeWidget(rowBar);
+    //delete rowBar;
+    //rowBar = _vBar;
+    //resize(width(), getRenderArea()->getRowLineHeight() * settings->numLines);
+    //update();
+    int h = height();
+    int i = 0;
+
+    connectSlots();
 }
 
-AssemblyAnnotationsAreaWidget::~AssemblyAnnotationsAreaWidget() {
-   // delete variantRowManager;
+//void AssemblyAnnotationsAreaWidget::pack() {
+//    QGridLayout* layout = new QGridLayout();
+//    layout->setMargin(0);
+//    layout->setSpacing(0);
+//    layout->addWidget(renderArea, 0, 0, 1, 1);
+//    layout->addWidget(rowBar, 0, 1, 1, 1);
+//    //layout->addWidget(scrollBar, 1, 0, 1, 1);
+//    setContentLayout(layout);
+//
+//}
+
+void AssemblyAnnotationsAreaWidget::mouseMoveEvent(QMouseEvent *e) {
+    emit si_mouseMovedToPos(e->pos());
+    PanView::mouseMoveEvent(e);
+}
+
+void AssemblyAnnotationsAreaWidget::sl_zoomPerformed() {
+    updateVisibleRange();
+    update();
+}
+
+void AssemblyAnnotationsAreaWidget::sl_offsetsChanged() {
+    updateVisibleRange();
+    update();
+}
+
+void AssemblyAnnotationsAreaWidget::connectSlots() const {
+    connect(this, SIGNAL(si_mouseMovedToPos(const QPoint &)),
+            browserUi->getAnnotationsArea(), SIGNAL(si_mouseMovedToPos(const QPoint &)));
+    connect(browser, SIGNAL(si_zoomOperationPerformed()), SLOT(sl_zoomPerformed()));
+    connect(browser, SIGNAL(si_offsetsChanged()), SLOT(sl_offsetsChanged()));
+}
+
+void AssemblyAnnotationsAreaWidget::updateVisibleRange() {
+    U2Region visibleBaseReg = browser->getVisibleBasesRegion();
+    if (visibleBaseReg != getVisibleRange()) {
+        setVisibleRange(visibleBaseReg);
+        addUpdateFlags(GSLV_UF_VisibleRangeChanged);
+    }
 }
 
 } // U2

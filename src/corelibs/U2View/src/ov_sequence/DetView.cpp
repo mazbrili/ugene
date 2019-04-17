@@ -744,6 +744,10 @@ void DetView::updateVerticalScrollBarPosition() {
     }
 }
 
+int DetView::getSliderPosition() const {
+    return scrollBar->isVisible() ? scrollBar->sliderPosition() : 0;
+}
+
 void DetView::setupTranslationsMenu() {
     QMenu *translationsMenu = ctx->createTranslationFramesMenu(QList<QAction*>() << doNotTranslateAction << translateAnnotationsOrSelectionAction << setUpFramesManuallyAction << showAllFramesAction);
     CHECK(NULL != translationsMenu, );
