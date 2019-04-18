@@ -48,32 +48,9 @@ AssemblyAnnotationsAreaWidget::AssemblyAnnotationsAreaWidget
                           renderer(dynamic_cast<AssemblyAnnotationsAreaRenderer*>(getRenderArea()->getRenderer())) {
     setLocalToolbarVisible(false);
     sl_toggleMainRulerVisibility(false);
-
     scrollBar->hide();
-    //rowBar->hide();
-    QGridLayout* girdLayout = qobject_cast<QGridLayout*>(contentWidget->layout());
-    //int h = rowBar->height();
-    //girdLayout->removeWidget(rowBar);
-    //delete rowBar;
-    //rowBar = _vBar;
-    //resize(width(), getRenderArea()->getRowLineHeight() * settings->numLines);
-    //update();
-    int h = height();
-    int i = 0;
-
     connectSlots();
 }
-
-//void AssemblyAnnotationsAreaWidget::pack() {
-//    QGridLayout* layout = new QGridLayout();
-//    layout->setMargin(0);
-//    layout->setSpacing(0);
-//    layout->addWidget(renderArea, 0, 0, 1, 1);
-//    layout->addWidget(rowBar, 0, 1, 1, 1);
-//    //layout->addWidget(scrollBar, 1, 0, 1, 1);
-//    setContentLayout(layout);
-//
-//}
 
 void AssemblyAnnotationsAreaWidget::mouseMoveEvent(QMouseEvent *e) {
     emit si_mouseMovedToPos(e->pos());

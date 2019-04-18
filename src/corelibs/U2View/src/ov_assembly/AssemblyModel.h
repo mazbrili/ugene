@@ -31,6 +31,7 @@
 
 namespace U2 {
 
+class AnnotationTableObject;
 class Document;
 class SequenceObjectContext;
 class Task;
@@ -79,6 +80,7 @@ public:
     U2EntityRef getRefereneceEntityRef();
 
     void setSequenceObjectContext(SequenceObjectContext* seqCtx);
+    SequenceObjectContext* getSequenceObjectContext() const;
 
     QByteArray getReferenceRegion(const U2Region& region, U2OpStatus& os);
     QByteArray getReferenceRegionOrEmpty(const U2Region& region);
@@ -144,9 +146,10 @@ private:
 
     bool loadingReference;
     U2SequenceObject* refObj;
-    QList<VariantTrackObject*> trackObjList;
-
     SequenceObjectContext* ctx;
+
+    QList<VariantTrackObject*> trackObjList;
+    QList<AnnotationTableObject*> annTableObject;
 
     QByteArray referenceMd5;
     bool md5Retrieved;

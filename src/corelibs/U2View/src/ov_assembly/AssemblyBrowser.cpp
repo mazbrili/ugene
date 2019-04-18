@@ -269,18 +269,7 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
             }
             model->associateWithReference(refId);
 
-            SequenceObjectContext* seqCtx = new SequenceObjectContext(seqObj, this);
-            QList<GObject*> allLoadedAnnotations = GObjectUtils::findAllObjects(UOF_LoadedOnly,
-                                                                GObjectTypes::ANNOTATION_TABLE);
-            QList<GObject*> annotations = GObjectUtils::findObjectsRelatedToObjectByRole(seqCtx->getSequenceObject(),
-                                                GObjectTypes::ANNOTATION_TABLE, ObjectRole_Sequence,
-                                                allLoadedAnnotations, UOF_LoadedOnly);
-            foreach(GObject* ann, annotations) {
-                CHECK_CONTINUE(GObjectTypes::ANNOTATION_TABLE == ann->getGObjectType());
-
-                seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(ann));
-            }
-            model->setSequenceObjectContext(seqCtx);
+            addAnnotationView(seqObj);
         }
     } else if (GObjectTypes::VARIANT_TRACK == obj->getGObjectType()) {
         VariantTrackObject *trackObj = qobject_cast<VariantTrackObject*>(obj);
@@ -293,9 +282,18 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
         U2SequenceObject* refObj = model->getRefObj();
         CHECK(nullptr != refObj, tr("Reference object not found"));
 
-        SequenceObjectContext* seqCtx = new SequenceObjectContext(refObj, this);
-        seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
-        model->setSequenceObjectContext(seqCtx);
+        obj->addObjectRelation(refObj, ObjectRole_Sequence);
+        SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
+        if (nullptr == seqCtx) {
+            seqCtx = new SequenceObjectContext(refObj, this);
+            seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+            model->setSequenceObjectContext(seqCtx);
+        } else {
+            seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+        }
+        //seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+        //model->setSequenceObjectContext(seqCtx);
+        addObjectToView(obj);
     } else {
         return unacceptableObjectError;
     }
@@ -747,6 +745,7 @@ void AssemblyBrowser::sl_unassociateReference() {
     unsetRef &= model->checkPermissions(QFile::WriteUser, unsetRef);
     if (unsetRef) {
         model->dissociateReference();
+        //model->
     }
 }
 
@@ -1067,6 +1066,22 @@ void AssemblyBrowser::setReference(const Document *doc) {
     } else {
         showReferenceLoadingError(objects, doc->getURLString());
     }
+}
+
+void AssemblyBrowser::addAnnotationView(U2SequenceObject* seqObj) {
+    SequenceObjectContext* seqCtx = new SequenceObjectContext(seqObj, this);
+    QList<GObject*> allLoadedAnnotations = GObjectUtils::findAllObjects(UOF_LoadedOnly,
+        GObjectTypes::ANNOTATION_TABLE);
+    QList<GObject*> annotations = GObjectUtils::findObjectsRelatedToObjectByRole(seqCtx->getSequenceObject(),
+        GObjectTypes::ANNOTATION_TABLE, ObjectRole_Sequence,
+        allLoadedAnnotations, UOF_LoadedOnly);
+    foreach(GObject* ann, annotations) {
+        CHECK_CONTINUE(GObjectTypes::ANNOTATION_TABLE == ann->getGObjectType());
+
+        seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(ann));
+        addObjectToView(ann);
+    }
+    model->setSequenceObjectContext(seqCtx);
 }
 
 void AssemblyBrowser::sl_setReference() {

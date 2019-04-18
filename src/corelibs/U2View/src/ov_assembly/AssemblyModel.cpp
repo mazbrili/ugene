@@ -23,6 +23,7 @@
 #include <QMessageBox>
 
 #include <U2Core/AddDocumentTask.h>
+#include <U2Core/AnnotationTableObject.h>
 #include <U2Core/AppContext.h>
 #include <U2Core/DNASequenceObject.h>
 #include <U2Core/GObjectTypes.h>
@@ -495,6 +496,10 @@ void AssemblyModel::setSequenceObjectContext(SequenceObjectContext* seqCtx) {
 
     }
     emit si_contectChanged(ctx);
+}
+
+SequenceObjectContext* AssemblyModel::getSequenceObjectContext() const {
+    return ctx;
 }
 
 QByteArray AssemblyModel::getReferenceRegionOrEmpty(const U2Region& region) {

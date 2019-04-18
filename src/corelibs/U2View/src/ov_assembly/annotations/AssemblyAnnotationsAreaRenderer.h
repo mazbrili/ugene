@@ -35,6 +35,8 @@ public:
          SequenceObjectContext* ctx,
          AssemblyBrowser* browser);
 
+    double getCurrentScale() const override;
+
 private:
     AssemblyBrowser* browser;
 };

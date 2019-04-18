@@ -29,6 +29,7 @@
 
 namespace U2 {
 
+class AssemblyAnnotationsAreaWidget;
 class AssemblyBrowserUi;
 class SequenceObjectContext;
 
@@ -37,6 +38,7 @@ class AssemblyAnnotationsArea : public QWidget {
     Q_OBJECT
 public:
     AssemblyAnnotationsArea(AssemblyBrowserUi* ui, QScrollBar* vBar);
+    ~AssemblyAnnotationsArea();
 
 //signals:
 //    void si_mouseMovedToPos(const QPoint&);
@@ -52,6 +54,7 @@ private:
 
     AssemblyBrowserUi* browserUi;
     SequenceObjectContext* seqCtx;
+    AssemblyAnnotationsAreaWidget* widget;
     QScrollBar* vBar;
 };
 
