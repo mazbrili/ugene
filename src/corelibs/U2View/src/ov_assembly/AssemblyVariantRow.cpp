@@ -22,6 +22,7 @@
 #include <QVBoxLayout>
 #include <QPainter>
 
+#include <U2Core/Counter.h>
 #include <U2Core/U2OpStatusUtils.h>
 #include <U2Core/U2SafePoints.h>
 #include <U2Core/VariantTrackObject.h>
@@ -302,6 +303,8 @@ void AssemblyVariantRowManager::sl_trackRemoved(VariantTrackObject *objToRemove)
 }
 
 void AssemblyVariantRowManager::sl_trackAdded(VariantTrackObject *newTrackObj) {
+    GCOUNTER(c2, t2, "AssemblyReadsArea::variantTrackWasAdded");
+
     AssemblyVariantsArea *variantsArea = ui->getVariantsArea();
 
     QLayout *layout = variantsArea->layout();

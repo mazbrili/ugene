@@ -282,18 +282,22 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
         U2SequenceObject* refObj = model->getRefObj();
         CHECK(nullptr != refObj, tr("Reference object not found"));
 
-        obj->addObjectRelation(refObj, ObjectRole_Sequence);
-        SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
-        if (nullptr == seqCtx) {
-            seqCtx = new SequenceObjectContext(refObj, this);
-            seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
-            model->setSequenceObjectContext(seqCtx);
-        } else {
-            seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
+        AnnotationTableObject* annTableObj = qobject_cast<AnnotationTableObject*>(obj);
+        CHECK(nullptr != annTableObj, tr("Annotation Table Object was missed"));
+
+        if (!model->getAnnotationTableObjects().contains(annTableObj)) {
+            annTableObj->addObjectRelation(refObj, ObjectRole_Sequence);
+            SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
+            if (nullptr == seqCtx) {
+                seqCtx = new SequenceObjectContext(refObj, this);
+                seqCtx->addAnnotationObject(annTableObj);
+                model->setSequenceObjectContext(seqCtx);
+            } else {
+                seqCtx->addAnnotationObject(annTableObj);
+            }
+            addObjectToView(annTableObj);
+            model->addAnnotationTableObject(annTableObj);
         }
-        //seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(obj));
-        //model->setSequenceObjectContext(seqCtx);
-        addObjectToView(obj);
     } else {
         return unacceptableObjectError;
     }
@@ -1069,17 +1073,26 @@ void AssemblyBrowser::setReference(const Document *doc) {
 }
 
 void AssemblyBrowser::addAnnotationView(U2SequenceObject* seqObj) {
+    if (nullptr != model->getSequenceObjectContext()) {
+        model->clearAnnotationTableObject();
+    }
+
     SequenceObjectContext* seqCtx = new SequenceObjectContext(seqObj, this);
     QList<GObject*> allLoadedAnnotations = GObjectUtils::findAllObjects(UOF_LoadedOnly,
-        GObjectTypes::ANNOTATION_TABLE);
+                                    GObjectTypes::ANNOTATION_TABLE);
     QList<GObject*> annotations = GObjectUtils::findObjectsRelatedToObjectByRole(seqCtx->getSequenceObject(),
-        GObjectTypes::ANNOTATION_TABLE, ObjectRole_Sequence,
-        allLoadedAnnotations, UOF_LoadedOnly);
+                                    GObjectTypes::ANNOTATION_TABLE, ObjectRole_Sequence,
+                                    allLoadedAnnotations, UOF_LoadedOnly);
     foreach(GObject* ann, annotations) {
         CHECK_CONTINUE(GObjectTypes::ANNOTATION_TABLE == ann->getGObjectType());
 
-        seqCtx->addAnnotationObject(qobject_cast<AnnotationTableObject *>(ann));
-        addObjectToView(ann);
+        AnnotationTableObject* annTableObj = qobject_cast<AnnotationTableObject*>(ann);
+        CHECK_CONTINUE(nullptr != annTableObj);
+        CHECK_CONTINUE(!model->getAnnotationTableObjects().contains(annTableObj));
+
+        seqCtx->addAnnotationObject(annTableObj);
+        model->addAnnotationTableObject(annTableObj);
+        addObjectToView(annTableObj);
     }
     model->setSequenceObjectContext(seqCtx);
 }

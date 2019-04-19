@@ -53,6 +53,7 @@ namespace U2 {
 PanViewLinesSettings::PanViewLinesSettings()
     : numLines(0),
       rowLinesOffset(0),
+      showSequence(true),
       showMainRuler(true),
       showCustomRulers(true) {
 }

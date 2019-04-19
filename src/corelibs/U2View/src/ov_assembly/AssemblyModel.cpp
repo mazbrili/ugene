@@ -611,6 +611,22 @@ void AssemblyModel::addTrackObject(VariantTrackObject *trackObj) {
     }
 }
 
+const QList<AnnotationTableObject*>& AssemblyModel::getAnnotationTableObjects() const {
+    return annTableObjects;
+}
+
+void AssemblyModel::clearAnnotationTableObject() {
+    annTableObjects.clear();
+}
+
+void AssemblyModel::addAnnotationTableObject(AnnotationTableObject* annTableObj) {
+    CHECK(nullptr != annTableObj, );
+
+    if (!annTableObjects.contains(annTableObj)) {
+        annTableObjects << annTableObj;
+    }
+}
+
 void AssemblyModel::sl_trackObjRemoved(GObject *o) {
     VariantTrackObject *trackObj = qobject_cast<VariantTrackObject*>(o);
     if (NULL != trackObj) {

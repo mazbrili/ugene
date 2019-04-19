@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QVBoxLayout>
 
+#include <U2Core/Counter.h>
+
 #include <U2Gui/GScrollBar.h>
 
 #include "../AssemblyBrowser.h"
@@ -46,8 +48,11 @@ AssemblyAnnotationsAreaWidget::AssemblyAnnotationsAreaWidget
                           browser(_browser),
                           browserUi(_ui),
                           renderer(dynamic_cast<AssemblyAnnotationsAreaRenderer*>(getRenderArea()->getRenderer())) {
+    GCOUNTER(c2, t2, "AssemblyReadsArea::annotationWigetWasCreaated");
+
     setLocalToolbarVisible(false);
     sl_toggleMainRulerVisibility(false);
+    sl_toggleCustomRulersVisibility(false);
     scrollBar->hide();
     connectSlots();
 }
