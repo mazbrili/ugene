@@ -73,7 +73,6 @@ public:
     int                 numLines;       // number of visible lines
     int                 rowLinesOffset; // row number on the first row line
 
-    bool                showSequence;
     bool                showMainRuler;
     bool                showCustomRulers;
     QList<RulerInfo>    customRulers;
