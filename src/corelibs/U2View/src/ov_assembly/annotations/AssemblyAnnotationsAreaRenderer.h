@@ -30,10 +30,9 @@ class AssemblyBrowser;
 
 class AssemblyAnnotationsAreaRenderer : public PanViewRenderer {
 public:
-    AssemblyAnnotationsAreaRenderer
-        (PanView *panView,
-         SequenceObjectContext* ctx,
-         AssemblyBrowser* browser);
+    AssemblyAnnotationsAreaRenderer(PanView *panView,
+                                    SequenceObjectContext* ctx,
+                                    AssemblyBrowser* browser);
 
     double getCurrentScale() const override;
 

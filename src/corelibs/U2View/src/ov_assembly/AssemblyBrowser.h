@@ -258,11 +258,10 @@ public:
     inline AssemblyReferenceArea * getReferenceArea() const {return referenceArea;}
     inline AssemblyConsensusArea * getConsensusArea() const {return consensusArea;}
     inline AssemblyVariantsArea * getVariantsArea() const {return variantsArea;}
-    inline AssemblyAnnotationsArea * getAnnotationsArea() const { return annotationsArea; }
+    inline AssemblyAnnotationsArea * getAnnotationsArea() const {return annotationsArea;}
     inline bool isCorrectView() const {return !nothingToVisualize;}
 
     QColor getCoverageColor(double grayCoeff);
-
 
 private:
     AssemblyBrowser*          browser;

@@ -19,13 +19,7 @@
  * MA 02110-1301, USA.
  */
 
-#include <U2Core/U2SafePoints.h>
-
-#include <U2View/PanView.h>
-#include <U2View/SequenceObjectContext.h>
-
 #include "../AssemblyBrowser.h"
-
 #include "AssemblyAnnotationsAreaRenderer.h"
 
 namespace U2 {

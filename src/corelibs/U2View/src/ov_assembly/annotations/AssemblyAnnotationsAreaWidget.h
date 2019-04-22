@@ -24,19 +24,15 @@
 
 #include <U2View/PanView.h>
 
-#include <QWidget>
-
 namespace U2 {
 
 class AssemblyBrowser;
 class AssemblyBrowserUi;
-class AssemblyAnnotationsAreaRenderer;
-
 
 class AssemblyAnnotationsAreaWidget : public PanView {
     Q_OBJECT
 public:
-    AssemblyAnnotationsAreaWidget(AssemblyBrowser* browser, AssemblyBrowserUi *ui, SequenceObjectContext* ctx, QScrollBar* vBar);
+    AssemblyAnnotationsAreaWidget(AssemblyBrowser* browser, AssemblyBrowserUi *ui, SequenceObjectContext* ctx);
 
 protected:
     void mouseMoveEvent(QMouseEvent *e) override;
@@ -54,7 +50,6 @@ private:
 
     AssemblyBrowser* browser;
     AssemblyBrowserUi* browserUi;
-    AssemblyAnnotationsAreaRenderer* renderer;
 };
 
 } // U2

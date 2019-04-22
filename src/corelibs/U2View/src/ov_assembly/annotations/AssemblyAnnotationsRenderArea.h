@@ -24,18 +24,9 @@
 
 #include <U2View/PanView.h>
 
-//#include "AssemblyCellRenderer.h"
-//#include "AssemblyVariantHint.h"
-
-#include <QWidget>
-//#include <QMenu>
-//#include <qevent.h>
-
 namespace U2 {
 
-class AssemblyBrowser;
 class AssemblyBrowserUi;
-class AssemblyModel;
 
 class AssemblyAnnotationsRenderArea : public PanViewRenderArea {
     Q_OBJECT
@@ -48,7 +39,6 @@ protected:
 
 private:
     AssemblyBrowserUi *ui;
-
 };
 
 } // U2

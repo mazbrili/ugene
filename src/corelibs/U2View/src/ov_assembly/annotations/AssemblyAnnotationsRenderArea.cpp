@@ -19,20 +19,11 @@
  * MA 02110-1301, USA.
  */
 
-#include <qpushbutton.h>
-#include <QVBoxLayout>
-//#include <QPainter>
-//
-//#include <U2Core/U2OpStatusUtils.h>
 #include <U2Core/U2SafePoints.h>
-//#include <U2Core/VariantTrackObject.h>
-//
-#include "..\AssemblyBrowser.h"
-#include "../AssemblyModel.h"
-#include "AssemblyAnnotationsArea.h"
 
-//#include "AssemblyAnnotationRowManager.h"
+#include "..\AssemblyBrowser.h"
 #include "AssemblyAnnotationsRenderArea.h"
+
 namespace U2 {
 
 AssemblyAnnotationsRenderArea::AssemblyAnnotationsRenderArea

@@ -19,19 +19,13 @@
  * MA 02110-1301, USA.
  */
 
-#include <QObject>
-#include <QPainter>
-#include <QVBoxLayout>
-
 #include <U2Core/Counter.h>
 
 #include <U2Gui/GScrollBar.h>
 
 #include "../AssemblyBrowser.h"
 #include "AssemblyAnnotationsArea.h"
-#include "AssemblyAnnotationsAreaRenderer.h"
 #include "AssemblyAnnotationsAreaWidget.h"
-#include "AssemblyAnnotationsRenderArea.h"
 #include "AssemblyAnnotationsRenderAreaFactory.h"
 
 namespace U2 {
@@ -39,15 +33,13 @@ namespace U2 {
 AssemblyAnnotationsAreaWidget::AssemblyAnnotationsAreaWidget
                     (AssemblyBrowser* _browser,
                      AssemblyBrowserUi* _ui,
-                     SequenceObjectContext* _ctx,
-                     QScrollBar* _vBar)
+                     SequenceObjectContext* _ctx)
                         : PanView(_ui,
                                   _ctx,
                                   AssemblyAnnotationsRenderAreaFactory(_ui,
                                                                        _browser)),
                           browser(_browser),
-                          browserUi(_ui),
-                          renderer(dynamic_cast<AssemblyAnnotationsAreaRenderer*>(getRenderArea()->getRenderer())) {
+                          browserUi(_ui) {
     GCOUNTER(c2, t2, "AssemblyReadsArea::annotationWigetWasCreaated");
 
     setLocalToolbarVisible(false);
@@ -55,6 +47,8 @@ AssemblyAnnotationsAreaWidget::AssemblyAnnotationsAreaWidget
     sl_toggleCustomRulersVisibility(false);
     scrollBar->hide();
     connectSlots();
+    updateVisibleRange();
+    update();
 }
 
 void AssemblyAnnotationsAreaWidget::mouseMoveEvent(QMouseEvent *e) {

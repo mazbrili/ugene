@@ -491,11 +491,9 @@ QByteArray AssemblyModel::getReferenceRegion(const U2Region& region, U2OpStatus&
 }
 
 void AssemblyModel::setSequenceObjectContext(SequenceObjectContext* seqCtx) {
+    assert(seqCtx);
     ctx = seqCtx;
-    if (nullptr != ctx) {
-
-    }
-    emit si_contectChanged(ctx);
+    emit si_contextChanged(ctx);
 }
 
 SequenceObjectContext* AssemblyModel::getSequenceObjectContext() const {

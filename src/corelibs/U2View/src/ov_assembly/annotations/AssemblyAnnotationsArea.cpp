@@ -19,8 +19,6 @@
  * MA 02110-1301, USA.
  */
 
-#include <QSharedPointer>
-
 #include <U2Core/U2SafePoints.h>
 
 #include <U2View/SequenceObjectContext.h>
@@ -33,11 +31,10 @@
 
 namespace U2 {
 
-AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui, QScrollBar* _vBar)
-                    : browserUi(_ui),
+AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui)
+                      : browserUi(_ui),
                         seqCtx(nullptr),
-                        widget(nullptr),
-                        vBar(_vBar) {
+                        widget(nullptr) {
     this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     this->setLayout(vLayout);
@@ -67,9 +64,8 @@ void AssemblyAnnotationsArea::sl_contextChanged(SequenceObjectContext* ctx) {
     if (nullptr != widget) {
         delete widget;
     }
-    widget = new AssemblyAnnotationsAreaWidget(browser, browserUi, seqCtx, vBar);
+    widget = new AssemblyAnnotationsAreaWidget(browser, browserUi, seqCtx);
     vertLayout->addWidget(widget);
-    //ctx->getA
 }
 
 void AssemblyAnnotationsArea::connectSignals() {
@@ -78,7 +74,7 @@ void AssemblyAnnotationsArea::connectSignals() {
     AssemblyModel* model = browserUi->getModel().data();
     SAFE_POINT(nullptr != model, tr("Annotation model is missed"), );
 
-    connect(model, SIGNAL(si_contectChanged(SequenceObjectContext*)), SLOT(sl_contextChanged(SequenceObjectContext*)));
+    connect(model, SIGNAL(si_contextChanged(SequenceObjectContext*)), SLOT(sl_contextChanged(SequenceObjectContext*)));
 }
 
 } // U2

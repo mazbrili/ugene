@@ -124,7 +124,7 @@ signals:
     void si_referenceChanged();
     void si_trackAdded(VariantTrackObject *trackObj);
     void si_trackRemoved(VariantTrackObject *trackObj);
-    void si_contectChanged(SequenceObjectContext*);
+    void si_contextChanged(SequenceObjectContext*);
 
 public slots:
     void sl_trackObjRemoved(GObject *o);

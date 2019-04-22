@@ -19,8 +19,6 @@
  * MA 02110-1301, USA.
  */
 
-//
-#include "AssemblyAnnotationsArea.h"
 #include "AssemblyAnnotationsAreaRenderer.h"
 #include "AssemblyAnnotationsRenderArea.h"
 #include "AssemblyAnnotationsRenderAreaFactory.h"
