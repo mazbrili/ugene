@@ -44,6 +44,7 @@ AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui)
 
 AssemblyAnnotationsArea::~AssemblyAnnotationsArea() {
     delete widget;
+    delete seqCtx;
 }
 
 void AssemblyAnnotationsArea::sl_contextChanged(SequenceObjectContext* ctx) {
