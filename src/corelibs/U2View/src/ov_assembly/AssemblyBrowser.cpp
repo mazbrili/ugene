@@ -137,6 +137,7 @@ void AssemblyBrowser::sl_referenceChanged() {
 
     U2SequenceObject *so = model->getRefObj();
     if (so != NULL) {
+        model->setSequenceObjectContext(new SequenceObjectContext(so, this));
         addObjectToView(so);
     }
     setReferenceAction->setEnabled(!model->isLoadingReference());
@@ -285,19 +286,8 @@ QString AssemblyBrowser::tryAddObject(GObject * obj) {
         AnnotationTableObject* annTableObj = qobject_cast<AnnotationTableObject*>(obj);
         CHECK(nullptr != annTableObj, tr("Annotation Table Object was missed"));
 
-        if (!model->getAnnotationTableObjects().contains(annTableObj)) {
-            annTableObj->addObjectRelation(refObj, ObjectRole_Sequence);
-            SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
-            if (nullptr == seqCtx) {
-                seqCtx = new SequenceObjectContext(refObj, this);
-                seqCtx->addAnnotationObject(annTableObj);
-                model->setSequenceObjectContext(seqCtx);
-            } else {
-                seqCtx->addAnnotationObject(annTableObj);
-            }
-            addObjectToView(annTableObj);
-            model->addAnnotationTableObject(annTableObj);
-        }
+        annTableObj->addObjectRelation(refObj, ObjectRole_Sequence);
+        addAnnotationTableObjectToView(annTableObj);
     } else {
         return unacceptableObjectError;
     }
@@ -1072,14 +1062,9 @@ void AssemblyBrowser::setReference(const Document *doc) {
 }
 
 void AssemblyBrowser::addAnnotationView(U2SequenceObject* seqObj) {
-    if (nullptr != model->getSequenceObjectContext()) {
-        model->clearAnnotationTableObject();
-    }
-
-    SequenceObjectContext* seqCtx = new SequenceObjectContext(seqObj, this);
     QList<GObject*> allLoadedAnnotations = GObjectUtils::findAllObjects(UOF_LoadedOnly,
                                     GObjectTypes::ANNOTATION_TABLE);
-    QList<GObject*> annotations = GObjectUtils::findObjectsRelatedToObjectByRole(seqCtx->getSequenceObject(),
+    QList<GObject*> annotations = GObjectUtils::findObjectsRelatedToObjectByRole(seqObj,
                                     GObjectTypes::ANNOTATION_TABLE, ObjectRole_Sequence,
                                     allLoadedAnnotations, UOF_LoadedOnly);
     foreach(GObject* ann, annotations) {
@@ -1087,13 +1072,18 @@ void AssemblyBrowser::addAnnotationView(U2SequenceObject* seqObj) {
 
         AnnotationTableObject* annTableObj = qobject_cast<AnnotationTableObject*>(ann);
         CHECK_CONTINUE(nullptr != annTableObj);
-        CHECK_CONTINUE(!model->getAnnotationTableObjects().contains(annTableObj));
 
-        seqCtx->addAnnotationObject(annTableObj);
-        model->addAnnotationTableObject(annTableObj);
-        addObjectToView(annTableObj);
+        addAnnotationTableObjectToView(annTableObj);
     }
-    model->setSequenceObjectContext(seqCtx);
+}
+
+void AssemblyBrowser::addAnnotationTableObjectToView(AnnotationTableObject* annTableObj) {
+    SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
+    SAFE_POINT(nullptr != seqCtx, "Sequence Object Context is missed", );
+    CHECK(!seqCtx->getAnnotationObjects().contains(annTableObj), );
+
+    seqCtx->addAnnotationObject(annTableObj);
+    addObjectToView(annTableObj);
 }
 
 void AssemblyBrowser::sl_setReference() {
@@ -1154,9 +1144,16 @@ void AssemblyBrowser::sl_onReferenceLoaded() {
 // AssemblyBrowserUi
 //==============================================================================
 
-AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_) : browser(browser_), zoomableOverview(0),
-referenceArea(0), coverageGraph(0), ruler(0), readsArea(0), variantsArea(0), nothingToVisualize(true)
-{
+AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
+                                                      : browser(browser_),
+                                                      zoomableOverview(nullptr),
+                                                      referenceArea(nullptr),
+                                                      coverageGraph(nullptr),
+                                                      ruler(nullptr),
+                                                      readsArea(nullptr),
+                                                      variantsArea(nullptr),
+                                                      annotationsArea(nullptr),
+                                                      nothingToVisualize(true) {
     U2OpStatusImpl os;
     if(browser->getModel()->hasReads(os)) { // has mapped reads -> show rich visualization
         setMinimumSize(300, 200);

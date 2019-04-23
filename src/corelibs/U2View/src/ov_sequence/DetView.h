@@ -68,7 +68,7 @@ public:
 
     void setDisabledDetViewActions(bool t);
 
-    int getVerticalScrollBarPosition();
+    int getVerticalScrollBarPosition() const override;
     int getShift() const;
     void setSelectedTranslations();
 
@@ -105,8 +105,6 @@ protected:
     void updateSize();
     void updateVerticalScrollBar();
     void updateVerticalScrollBarPosition();
-
-    int getSliderPosition() const override;
 
     QAction*        showComplementAction;
     QAction*        showTranslationAction;

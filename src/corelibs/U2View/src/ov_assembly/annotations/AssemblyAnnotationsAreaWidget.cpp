@@ -56,6 +56,10 @@ void AssemblyAnnotationsAreaWidget::mouseMoveEvent(QMouseEvent *e) {
     PanView::mouseMoveEvent(e);
 }
 
+int AssemblyAnnotationsAreaWidget::getVerticalScrollBarPosition() const {
+    return scrollBar->sliderPosition();
+}
+
 void AssemblyAnnotationsAreaWidget::sl_zoomPerformed() {
     updateVisibleRange();
     update();

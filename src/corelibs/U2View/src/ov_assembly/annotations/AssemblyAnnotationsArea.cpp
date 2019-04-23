@@ -23,8 +23,8 @@
 
 #include <U2View/SequenceObjectContext.h>
 
-#include "../AssemblyBrowser.h"
-#include "../AssemblyModel.h"
+#include "ov_assembly/AssemblyBrowser.h"
+#include "ov_assembly/AssemblyModel.h"
 
 #include "AssemblyAnnotationsArea.h"
 #include "AssemblyAnnotationsAreaWidget.h"
@@ -33,13 +33,12 @@ namespace U2 {
 
 AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui)
                       : browserUi(_ui),
-                        seqCtx(nullptr),
-                        widget(nullptr) {
-    this->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
-    QVBoxLayout *vLayout = new QVBoxLayout(this);
-    this->setLayout(vLayout);
-    vLayout->setMargin(0);
-    vLayout->setSpacing(0);
+                        seqCtx(nullptr) {
+    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
+    vertLayout = new QVBoxLayout(this);
+    setLayout(vertLayout);
+    vertLayout->setMargin(0);
+    vertLayout->setSpacing(0);
     connectSignals();
 }
 
@@ -48,31 +47,27 @@ AssemblyAnnotationsArea::~AssemblyAnnotationsArea() {
 }
 
 void AssemblyAnnotationsArea::sl_contextChanged(SequenceObjectContext* ctx) {
-    SAFE_POINT(nullptr != ctx, tr("Sequence Object Context is absent"), );
+    delete widget;
+    delete seqCtx;
     seqCtx = ctx;
+    connect(seqCtx, SIGNAL(si_annotationObjectAdded(AnnotationTableObject *)), SLOT(sl_createWidget()));
+}
 
-    AssemblyAnnotationsArea* annotatiomnArea = browserUi->getAnnotationsArea();
-    SAFE_POINT(nullptr != annotatiomnArea, tr("Assembly Annotations Area widget is missed"), );
-
-    QLayout *layout = annotatiomnArea->layout();
-    QVBoxLayout *vertLayout = qobject_cast<QVBoxLayout*>(layout);
-    SAFE_POINT(nullptr != vertLayout, tr("Internal error: layout problems"), );
+void AssemblyAnnotationsArea::sl_createWidget() {
+    CHECK(nullptr == widget, );
 
     AssemblyBrowser* browser = browserUi->getWindow();
-    SAFE_POINT(nullptr != browser, tr("Assembly Browser is missed"), );
+    SAFE_POINT(nullptr != browser, "Assembly Browser is missed", );
 
-    if (nullptr != widget) {
-        delete widget;
-    }
     widget = new AssemblyAnnotationsAreaWidget(browser, browserUi, seqCtx);
     vertLayout->addWidget(widget);
 }
 
 void AssemblyAnnotationsArea::connectSignals() {
-    SAFE_POINT(nullptr != browserUi, tr("Assembly browser widget is missed"), );
+    SAFE_POINT(nullptr != browserUi, "Assembly browser widget is missed", );
 
     AssemblyModel* model = browserUi->getModel().data();
-    SAFE_POINT(nullptr != model, tr("Annotation model is missed"), );
+    SAFE_POINT(nullptr != model, "Annotation model is missed", );
 
     connect(model, SIGNAL(si_contextChanged(SequenceObjectContext*)), SLOT(sl_contextChanged(SequenceObjectContext*)));
 }

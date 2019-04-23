@@ -94,6 +94,7 @@ void AssemblyModel::dissociateReference() {
         unsetReference();
 
         removeCrossDatabaseReference(refId);
+        setSequenceObjectContext(nullptr);
 
         emit si_referenceChanged();
     }
@@ -491,7 +492,6 @@ QByteArray AssemblyModel::getReferenceRegion(const U2Region& region, U2OpStatus&
 }
 
 void AssemblyModel::setSequenceObjectContext(SequenceObjectContext* seqCtx) {
-    assert(seqCtx);
     ctx = seqCtx;
     emit si_contextChanged(ctx);
 }
@@ -606,22 +606,6 @@ void AssemblyModel::addTrackObject(VariantTrackObject *trackObj) {
 
         connect(trackObj->getDocument(), SIGNAL(si_objectRemoved(GObject*)), SLOT(sl_trackObjRemoved(GObject*)));
         emit si_trackAdded(trackObj);
-    }
-}
-
-const QList<AnnotationTableObject*>& AssemblyModel::getAnnotationTableObjects() const {
-    return annTableObjects;
-}
-
-void AssemblyModel::clearAnnotationTableObject() {
-    annTableObjects.clear();
-}
-
-void AssemblyModel::addAnnotationTableObject(AnnotationTableObject* annTableObj) {
-    CHECK(nullptr != annTableObj, );
-
-    if (!annTableObjects.contains(annTableObj)) {
-        annTableObjects << annTableObj;
     }
 }
 

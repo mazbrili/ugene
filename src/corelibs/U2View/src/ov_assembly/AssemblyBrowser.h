@@ -189,6 +189,7 @@ private:
     void showReferenceLoadingError(const QList<GObject*> &sequenceObjects, const QString &url) const;
     void setReference(const Document *doc);
     void addAnnotationView(U2SequenceObject* seqObj);
+    void addAnnotationTableObjectToView(AnnotationTableObject* annTableObj);
 
 private:
     AssemblyBrowserUi * ui;

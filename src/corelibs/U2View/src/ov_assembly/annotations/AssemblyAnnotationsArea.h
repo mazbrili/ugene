@@ -22,6 +22,8 @@
 #ifndef _ASSEMBLY_ANNOTATIONS_AREA_
 #define _ASSEMBLY_ANNOTATIONS_AREA_
 
+#include <QPointer>
+#include <QVBoxLayout>
 #include <QWidget>
 
 namespace U2 {
@@ -37,18 +39,20 @@ public:
     AssemblyAnnotationsArea(AssemblyBrowserUi* ui);
     ~AssemblyAnnotationsArea();
 
-public slots:
-    void sl_contextChanged(SequenceObjectContext* ctx);
-
 signals:
-    void si_mouseMovedToPos(const QPoint&);
+    void si_mouseMovedToPos(const QPoint& p);
+
+private slots:
+    void sl_contextChanged(SequenceObjectContext* ctx);
+    void sl_createWidget();
 
 private:
     void connectSignals();
 
     AssemblyBrowserUi* browserUi;
     SequenceObjectContext* seqCtx;
-    AssemblyAnnotationsAreaWidget* widget;
+    QPointer<AssemblyAnnotationsAreaWidget> widget;
+    QVBoxLayout* vertLayout;
 };
 
 } // U2

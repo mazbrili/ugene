@@ -100,10 +100,6 @@ public:
     const QList<VariantTrackObject*> &getTrackList() const;
     void addTrackObject(VariantTrackObject *trackObj);
 
-    const QList<AnnotationTableObject*>& getAnnotationTableObjects() const;
-    void addAnnotationTableObject(AnnotationTableObject* annTableObj);
-    void clearAnnotationTableObject();
-
     bool checkPermissions(QFile::Permission permission, bool showDialog = true) const;
     void dissociateReference();
 
@@ -154,7 +150,6 @@ private:
     SequenceObjectContext* ctx;
 
     QList<VariantTrackObject*> trackObjList;
-    QList<AnnotationTableObject*> annTableObjects;
 
     QByteArray referenceMd5;
     bool md5Retrieved;
