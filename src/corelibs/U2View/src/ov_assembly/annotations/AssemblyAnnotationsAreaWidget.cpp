@@ -56,7 +56,7 @@ void AssemblyAnnotationsAreaWidget::mouseMoveEvent(QMouseEvent *e) {
     PanView::mouseMoveEvent(e);
 }
 
-int AssemblyAnnotationsAreaWidget::getVerticalScrollBarPosition() const {
+int AssemblyAnnotationsAreaWidget::getHorizontalScrollBarPosition() const {
     return scrollBar->sliderPosition();
 }
 

@@ -44,12 +44,10 @@ AssemblyAnnotationsArea::AssemblyAnnotationsArea(AssemblyBrowserUi* _ui)
 
 AssemblyAnnotationsArea::~AssemblyAnnotationsArea() {
     delete widget;
-    delete seqCtx;
 }
 
 void AssemblyAnnotationsArea::sl_contextChanged(SequenceObjectContext* ctx) {
     delete widget;
-    delete seqCtx;
     seqCtx = ctx;
     connect(seqCtx, SIGNAL(si_annotationObjectAdded(AnnotationTableObject *)), SLOT(sl_createWidget()));
 }

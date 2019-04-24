@@ -48,6 +48,8 @@
 #include <U2Core/U2SqlHelpers.h>
 #include <U2Core/VariantTrackObject.h>
 
+#include <U2View/SequenceObjectContext.h>
+
 #include <U2Gui/ObjectViewTasks.h>
 
 #include "AssemblyBrowser.h"
@@ -75,6 +77,7 @@ AssemblyModel::AssemblyModel(const DbiConnection& dbiCon_) :
 
 AssemblyModel::~AssemblyModel() {
     unsetReference();
+    delete ctx;
 }
 
 void AssemblyModel::unsetReference() {
@@ -492,8 +495,10 @@ QByteArray AssemblyModel::getReferenceRegion(const U2Region& region, U2OpStatus&
 }
 
 void AssemblyModel::setSequenceObjectContext(SequenceObjectContext* seqCtx) {
+    SequenceObjectContext* tmp_ctx = ctx;
     ctx = seqCtx;
     emit si_contextChanged(ctx);
+    delete tmp_ctx;
 }
 
 SequenceObjectContext* AssemblyModel::getSequenceObjectContext() const {

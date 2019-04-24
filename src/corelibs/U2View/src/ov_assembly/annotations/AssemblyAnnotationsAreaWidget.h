@@ -37,7 +37,7 @@ public:
 protected:
     void mouseMoveEvent(QMouseEvent *e) override;
 
-    int getVerticalScrollBarPosition() const override;
+    int getHorizontalScrollBarPosition() const override;
 
 signals:
     void si_mouseMovedToPos(const QPoint&);

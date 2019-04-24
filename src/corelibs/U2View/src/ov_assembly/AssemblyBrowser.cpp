@@ -137,7 +137,7 @@ void AssemblyBrowser::sl_referenceChanged() {
 
     U2SequenceObject *so = model->getRefObj();
     if (so != NULL) {
-        model->setSequenceObjectContext(new SequenceObjectContext(so, this));
+        model->setSequenceObjectContext(new SequenceObjectContext(so, nullptr));
         addObjectToView(so);
     }
     setReferenceAction->setEnabled(!model->isLoadingReference());
