@@ -142,6 +142,7 @@ QMap<QString, QList<SharedAnnotationData> > GTFFormat::parseDocument(IOAdapter *
 
     bool fileIsValid = true;
     int lineNumber = 1;
+    bool geneIdOrTranscriptIdQalNotFound = false;
     while (readGTFLine(qstrbuf, io, buff, os) > 0) {
 
         if (qstrbuf.startsWith("track")) { //skip comments
@@ -226,18 +227,9 @@ QMap<QString, QList<SharedAnnotationData> > GTFFormat::parseDocument(IOAdapter *
                 " format at line %1!").arg(lineNumber));
         }
 
-
-        // Verify that mandatory attributes "gene_id" and "transcript_id" are present
-        if (validationStatus.isGeneIdAbsent()) {
-            ioLog.trace(tr("GTF parsing error: mandatory attribute '") +
-                GENE_ID_QUALIFIER_NAME + tr("' is absent at line %1!").arg(lineNumber));
+        if (!geneIdOrTranscriptIdQalNotFound || validationStatus.isGeneIdAbsent() || validationStatus.isTranscriptIdAbsent()) {
+            geneIdOrTranscriptIdQalNotFound = true;
         }
-
-        if (validationStatus.isTranscriptIdAbsent()) {
-            ioLog.trace(tr("GTF parsing error: mandatory attribute '") +
-                TRANSCRIPT_ID_QUALIFIER_NAME + tr("' is absent at line %1!").arg(lineNumber));
-        }
-
 
         // Verify the strand
         if (validationStatus.isIncorrectStrand()) {
@@ -258,7 +250,11 @@ QMap<QString, QList<SharedAnnotationData> > GTFFormat::parseDocument(IOAdapter *
     CHECK_OP(os, result);
 
     if (!fileIsValid) {
-        ioLog.error("GTF parsing error: one or more errors occurred while parsing the input file, see TRACE log for details!");
+        ioLog.error("GTF parsing error: one or more errors occurred while parsing the input file, see TRACE and INFO log for details!");
+    }
+
+    if (geneIdOrTranscriptIdQalNotFound) {
+        ioLog.info(QString("The %1 file GTF format is not strict - some annotations do not have 'gene_id' and/or 'transcript_id' qualifiers.").arg(io->getURL().getURLString()));
     }
 
     return result;
