@@ -155,6 +155,9 @@ public:
     QString tryAddObject(GObject* obj);
 
     const CodonTableView* getCodonTableView() const {return codonTableView; }
+    void connectAnnotationSelection();
+    void connectAnnotationGroupSelection();
+
 
 protected:
     virtual QWidget* createWidget();
@@ -178,8 +181,8 @@ signals:
     void si_sequenceAdded(ADVSequenceObjectContext* c);
     void si_sequenceRemoved(ADVSequenceObjectContext* c);
 
-    void si_annotationObjectAdded( AnnotationTableObject *obj );
-    void si_annotationObjectRemoved( AnnotationTableObject *obj );
+    //void si_annotationObjectAdded( AnnotationTableObject *obj );
+    //void si_annotationObjectRemoved( AnnotationTableObject *obj );
 
     void si_sequenceWidgetAdded(ADVSequenceWidget* w);
     void si_sequenceWidgetRemoved(ADVSequenceWidget* w);
@@ -221,6 +224,9 @@ private slots:
     virtual void sl_onDocumentLoadedStateChanged();
     virtual void sl_removeSelectedSequenceObject();
 
+    void sl_tryAddObject(GObject* obj);
+    void sl_removeObject(GObject* obj);
+
 private:
     void updateScrollAreaHeight();
     void updateMultiViewActions();
@@ -234,8 +240,8 @@ private:
     void seqWidgetMove(const QPoint& pos);
     void finishSeqWidgetMove();
     void createCodonTableAction();
-
     void reverseComplementSequence(bool reverse = true, bool complement = true);
+
 
     static QAction* getEditActionFromSequenceWidget(ADVSequenceWidget* seqWgt);
 

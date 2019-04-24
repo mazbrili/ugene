@@ -370,6 +370,10 @@ void SequenceObjectContext::emitClearSelectedAnnotationRegions() {
     emit si_clearSelectedAnnotationRegions();
 }
 
+void SequenceObjectContext::emitAnnotationObjectRemoved(AnnotationTableObject* annTableObj) {
+    emit si_annotationObjectRemoved(annTableObj);
+}
+
 QList<Annotation *> SequenceObjectContext::selectRelatedAnnotations(const QList<Annotation *> &alist) const {
     QList<Annotation *> res;
     foreach (Annotation *a, alist) {

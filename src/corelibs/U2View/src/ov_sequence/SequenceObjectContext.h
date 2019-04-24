@@ -79,6 +79,7 @@ public:
     void emitAnnotationSelection(AnnotationSelectionData* asd);
     void emitAnnotationSequenceSelection(AnnotationSelectionData* asd);
     void emitClearSelectedAnnotationRegions();
+    void emitAnnotationObjectRemoved(AnnotationTableObject* annTableObj);
 
     // temporary virtual
     virtual AnnotationSelection * getAnnotationsSelection() const;

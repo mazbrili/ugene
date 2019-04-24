@@ -50,6 +50,7 @@ class AVAnnotationItem;
 class AVGroupItem;
 class AVItem;
 class AVQualifierItem;
+class GObject;
 class GObjectView;
 class RemoveItemsTask;
 class U2Qualifier;
@@ -72,7 +73,8 @@ class U2VIEW_EXPORT AnnotationsTreeView : public QWidget {
     Q_OBJECT
     friend class AnnotatedDNAView;
 public:
-    AnnotationsTreeView(AnnotatedDNAView* ctx);
+    //AnnotationsTreeView(AnnotatedDNAView* ctx);
+    AnnotationsTreeView(const QList<ADVSequenceObjectContext*>& seqContexts, AnnotatedDNAView* ctx);
 
     void saveWidgetState();
     void restoreWidgetState();
@@ -91,6 +93,11 @@ public:
     void setSortingEnabled(bool v);
 
     AVItem* currentItem();
+
+    void buildPopupMenu(QMenu* menu);
+    void onSequenceAdded(ADVSequenceObjectContext* advContext);
+    void onSequenceRemoved(ADVSequenceObjectContext* advContext);
+    void addAnnotationTableObject(AnnotationTableObject* annTableObj);
 
     static const int COLUMN_NAME;
     static const int COLUMN_TYPE;
@@ -151,6 +158,10 @@ private slots:
 protected:
     bool eventFilter(QObject *o, QEvent *e);
 
+signals:
+    void si_tryAddObject(GObject*);
+    void si_removeObject(GObject*);
+
 private:
     void editItem(AVItem *i);
     void editGroupItem(AVGroupItem *gi);
@@ -179,10 +190,8 @@ private:
     QList<AVAnnotationItem *> findAnnotationItems(const AVGroupItem *gi) const;
     void removeGroupAnnotationsFromCache(const AVGroupItem *groupItem);
 
-    void onSequenceAdded(ADVSequenceObjectContext* advContext);
-
-    void connectAnnotationSelection();
-    void connectAnnotationGroupSelection();
+    //void connectAnnotationSelection();
+    //void connectAnnotationGroupSelection();
 
     void updateState();
     void updateColumnContextActions(AVItem* item, int col);
@@ -194,10 +203,15 @@ private:
     void annotationClicked(AVAnnotationItem* item, QMap<AVAnnotationItem*, QList<U2Region> > selectedAnnotations, const QList<U2Region>& selectedRegions = QList<U2Region>());
     void annotationDoubleClicked(AVAnnotationItem* item, const QList<U2Region>& selectedRegions, const int numOfClickedRegion = -1);
     void clearSelectedNotAnnotations();
+    void connectContextSlots(ADVSequenceObjectContext* context) const;
+    ADVSequenceObjectContext* getSequenceContext(AnnotationTableObject *obj) const;
 
     AnnotationsTreeWidget* tree;
 
     AnnotatedDNAView*   ctx;
+    QList<ADVSequenceObjectContext*> seqContexts;
+    QList<AnnotationTableObject*> annTableObjects;
+
     QAction*            addAnnotationObjectAction;
     QAction*            removeObjectsFromViewAction;
     QAction*            removeAnnsAndQsAction;

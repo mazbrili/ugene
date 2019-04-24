@@ -113,7 +113,152 @@ const QString AnnotationsTreeView::annotationMimeType = "application/x-annotatio
 AVGroupItem * AnnotationsTreeView::dropDestination = NULL;
 QList<Annotation *> AnnotationsTreeView::dndAdded = QList<Annotation *>();
 
-AnnotationsTreeView::AnnotationsTreeView(AnnotatedDNAView* _ctx) : ctx(_ctx), dndHit(0) {
+//AnnotationsTreeView::AnnotationsTreeView(AnnotatedDNAView* _ctx) : ctx(_ctx), dndHit(0) {
+//    lastMB = Qt::NoButton;
+//    lastClickedColumn = 0;
+//
+//    tree = new AnnotationsTreeWidget(this);
+//    tree->setObjectName("annotations_tree_widget");
+//
+//    tree->setSortingEnabled(true);
+//    tree->sortItems(0, Qt::AscendingOrder);
+//
+//    tree->setColumnCount(3);
+//    headerLabels << tr("Name") << tr("Type") << tr("Value");
+//
+//    tree->setHeaderLabels(headerLabels);
+//    tree->setUniformRowHeights(true);
+//    tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
+//    tree->viewport()->installEventFilter(this);
+//    tree->setMouseTracking(true);
+//    tree->setAutoScroll(true);
+//
+//    connect(tree, SIGNAL(itemEntered(QTreeWidgetItem*, int)), SLOT(sl_itemEntered(QTreeWidgetItem*, int)));
+//    connect(tree, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(sl_itemClicked(QTreeWidgetItem*, int)));
+//    connect(tree, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(sl_itemPressed(QTreeWidgetItem*)));
+//    connect(tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(sl_itemDoubleClicked(QTreeWidgetItem*, int)));
+//    connect(tree, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(sl_itemExpanded(QTreeWidgetItem*)));
+//
+//    QVBoxLayout *layout = new QVBoxLayout();
+//    layout->setMargin(0);
+//    layout->addWidget(tree);
+//    setLayout(layout);
+//
+//    restoreWidgetState();
+//
+//    connect(ctx, SIGNAL(si_buildPopupMenu(GObjectView*, QMenu*)), SLOT(sl_onBuildPopupMenu(GObjectView*, QMenu*)));
+//    connect(ctx, SIGNAL(si_annotationObjectAdded(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectAdded(AnnotationTableObject*)));
+//    connect(ctx, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectRemoved(AnnotationTableObject*)));
+//    connect(ctx, SIGNAL(si_sequenceAdded(ADVSequenceObjectContext*)), SLOT(sl_sequenceAdded(ADVSequenceObjectContext*)));
+//    connect(ctx, SIGNAL(si_sequenceRemoved(ADVSequenceObjectContext*)), SLOT(sl_sequenceRemoved(ADVSequenceObjectContext*)));
+//    QList<AnnotationTableObject *> aObjs = ctx->getAnnotationObjects(true);
+//    foreach (AnnotationTableObject *obj, aObjs) {
+//        sl_onAnnotationObjectAdded(obj);
+//    }
+//    const QList<ADVSequenceObjectContext*> seqContexts = ctx->getSequenceContexts();
+//    foreach(ADVSequenceObjectContext* context, seqContexts) {
+//        onSequenceAdded(context);
+//    }
+//    connectAnnotationSelection();
+//    connectAnnotationGroupSelection();
+//    connect(tree, SIGNAL(itemSelectionChanged()), SLOT(sl_onItemSelectionChanged()));
+//
+//    connect(AppContext::getAnnotationsSettingsRegistry(), SIGNAL(si_annotationSettingsChanged(const QStringList &)),
+//        SLOT(sl_onAnnotationSettingsChanged(const QStringList &)));
+//
+//#define SORT_INTERVAL 500
+//    sortTimer.setInterval(SORT_INTERVAL);
+//    sortTimer.setSingleShot(true);
+//    connect(&sortTimer, SIGNAL(timeout()), SLOT(sl_sortTree()));
+//
+//    addColumnIcon = QIcon(":core/images/add_column.png");
+//    removeColumnIcon = QIcon(":core/images/remove_column.png");
+//
+//    /*
+//    pasteAction = new QAction(QIcon(":/core/images/paste.png"), tr("Paste annotations"), this);
+//    pasteAction->setObjectName("Paste annotations");
+//    pasteAction->setShortcut(QKeySequence(Qt::SHIFT| Qt::Key_V | Qt::ControlModifier));
+//    pasteAction->setShortcutContext(Qt::WidgetShortcut);
+//    connect(pasteAction, SIGNAL(triggered()), SLOT(sl_paste()));
+//    tree->addAction(pasteAction);
+//    */
+//
+//    addAnnotationObjectAction = new QAction(tr("Objects with annotations..."), this);
+//    connect(addAnnotationObjectAction, SIGNAL(triggered()), SLOT(sl_onAddAnnotationObjectToView()));
+//
+//    removeObjectsFromViewAction = new QAction(tr("Selected objects with annotations from view"), this);
+//    removeObjectsFromViewAction->setObjectName("Selected objects with annotations from view");
+//    removeObjectsFromViewAction->setShortcut(QKeySequence(Qt::SHIFT| Qt::Key_Delete));
+//    removeObjectsFromViewAction->setShortcutContext(Qt::WidgetShortcut);
+//    connect(removeObjectsFromViewAction, SIGNAL(triggered()), SLOT(sl_removeObjectFromView()));
+//    tree->addAction(removeObjectsFromViewAction);
+//
+//    removeAnnsAndQsAction = new QAction(tr("Selected annotations and qualifiers"), this);
+//    removeAnnsAndQsAction->setObjectName("Selected annotations and qualifiers");
+//    //hotkeys are set in AnnotatedDNAView::createWidget()
+//    connect(removeAnnsAndQsAction, SIGNAL(triggered()), SLOT(sl_removeAnnsAndQs()));
+//    tree->addAction(removeAnnsAndQsAction);
+//
+//    copyQualifierAction = new QAction(QIcon(":/core/images/copy_qualifier.png"), tr("Copy qualifier text"), this);
+//    connect(copyQualifierAction, SIGNAL(triggered()), SLOT(sl_onCopyQualifierValue()));
+//
+//    copyQualifierURLAction = new QAction(tr("Copy qualifier URL"), this);
+//    connect(copyQualifierURLAction, SIGNAL(triggered()), SLOT(sl_onCopyQualifierURL()));
+//
+//    toggleQualifierColumnAction = new QAction(tr("Toggle column"), this);
+//    toggleQualifierColumnAction->setObjectName("toggle_column");
+//    connect(toggleQualifierColumnAction, SIGNAL(triggered()), SLOT(sl_onToggleQualifierColumn()));
+//
+//    removeColumnByHeaderClickAction = new QAction(tr("Hide column"), this);
+//    removeColumnByHeaderClickAction->setIcon(removeColumnIcon);
+//    connect(removeColumnByHeaderClickAction, SIGNAL(triggered()), SLOT(sl_onRemoveColumnByHeaderClick()));
+//
+//    searchQualifierAction = new QAction(tr("Find qualifier..."), this);
+//    searchQualifierAction->setObjectName("find_qualifier_action");
+//    searchQualifierAction->setIcon(QIcon(":core/images/zoom_whole.png"));
+//    connect (searchQualifierAction, SIGNAL(triggered()), SLOT(sl_searchQualifier()));
+//
+//    invertAnnotationSelectionAction = new QAction(tr("Invert annotation selection"), this);
+//    invertAnnotationSelectionAction->setObjectName("invert_selection_action");
+//    connect (invertAnnotationSelectionAction, SIGNAL(triggered()), SLOT(sl_invertSelection()));
+//
+//    copyColumnTextAction = new QAction(tr("Copy column text"), this);
+//    connect(copyColumnTextAction, SIGNAL(triggered()), SLOT(sl_onCopyColumnText()));
+//
+//    copyColumnURLAction = new QAction(tr("copy column URL"), this);
+//    connect(copyColumnURLAction, SIGNAL(triggered()), SLOT(sl_onCopyColumnURL()));
+//
+//    editAction = new QAction(tr("Annotation"), this);
+//    editAction->setObjectName("edit_annotation_tree_item");
+//    editAction->setShortcut(QKeySequence(Qt::Key_F2));
+//    editAction->setShortcutContext(Qt::WindowShortcut);
+//    connect(editAction, SIGNAL(triggered()), SLOT(sl_edit()));
+//    tree->addAction(editAction);
+//
+//    addQualifierAction = new QAction(tr("Qualifier..."), this);
+//#ifndef Q_OS_MAC
+//    addQualifierAction->setShortcut(QKeySequence(Qt::Key_Insert));
+//#else
+//    addQualifierAction->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_I));
+//#endif
+//    addQualifierAction->setShortcutContext(Qt::WindowShortcut);
+//    addQualifierAction->setObjectName("add_qualifier_action");
+//    connect(addQualifierAction, SIGNAL(triggered()), SLOT(sl_addQualifier()));
+//    tree->addAction(addQualifierAction);
+//
+//    exportAutoAnnotationsGroup = new QAction(tr("Make auto-annotations persistent"), this);
+//    connect(exportAutoAnnotationsGroup, SIGNAL(triggered()), SLOT(sl_exportAutoAnnotationsGroup()));
+//
+//    updateState();
+//
+//    isDragging = false;
+//    resetDragAndDropData();
+//    tree->setAcceptDrops(true);
+//}
+
+AnnotationsTreeView::AnnotationsTreeView(const QList<ADVSequenceObjectContext*>& _seqContexts,
+                                         AnnotatedDNAView* _ctx)
+           : seqContexts(_seqContexts), ctx(_ctx), dndHit(0) {
     lastMB = Qt::NoButton;
     lastClickedColumn = 0;
 
@@ -146,21 +291,25 @@ AnnotationsTreeView::AnnotationsTreeView(AnnotatedDNAView* _ctx) : ctx(_ctx), dn
 
     restoreWidgetState();
 
-    connect(ctx, SIGNAL(si_buildPopupMenu(GObjectView*, QMenu*)), SLOT(sl_onBuildPopupMenu(GObjectView*, QMenu*)));
-    connect(ctx, SIGNAL(si_annotationObjectAdded(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectAdded(AnnotationTableObject*)));
-    connect(ctx, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectRemoved(AnnotationTableObject*)));
-    connect(ctx, SIGNAL(si_sequenceAdded(ADVSequenceObjectContext*)), SLOT(sl_sequenceAdded(ADVSequenceObjectContext*)));
-    connect(ctx, SIGNAL(si_sequenceRemoved(ADVSequenceObjectContext*)), SLOT(sl_sequenceRemoved(ADVSequenceObjectContext*)));
-    QList<AnnotationTableObject *> aObjs = ctx->getAnnotationObjects(true);
-    foreach (AnnotationTableObject *obj, aObjs) {
-        sl_onAnnotationObjectAdded(obj);
-    }
-    const QList<ADVSequenceObjectContext*> seqContexts = ctx->getSequenceContexts();
+    //connect(ctx, SIGNAL(si_buildPopupMenu(GObjectView*, QMenu*)), SLOT(sl_onBuildPopupMenu(GObjectView*, QMenu*)));
+    //connect(ctx, SIGNAL(si_annotationObjectAdded(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectAdded(AnnotationTableObject*)));
+    //connect(ctx, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectRemoved(AnnotationTableObject*)));
+    //connect(ctx, SIGNAL(si_sequenceAdded(ADVSequenceObjectContext*)), SLOT(sl_sequenceAdded(ADVSequenceObjectContext*)));
+    //connect(ctx, SIGNAL(si_sequenceRemoved(ADVSequenceObjectContext*)), SLOT(sl_sequenceRemoved(ADVSequenceObjectContext*)));
+    //QList<AnnotationTableObject *> aObjs = ctx->getAnnotationObjects(true);
+    //foreach(AnnotationTableObject *obj, _annTableObjects) {
+    //    sl_onAnnotationObjectAdded(obj);
+    //}
+    //const QList<ADVSequenceObjectContext*> seqContexts = ctx->getSequenceContexts();
     foreach(ADVSequenceObjectContext* context, seqContexts) {
         onSequenceAdded(context);
+        QSet<AnnotationTableObject *> annTableObjs = context->getAnnotationObjects(false);
+        foreach(AnnotationTableObject *obj, annTableObjs) {
+            sl_onAnnotationObjectAdded(obj);
+        }
     }
-    connectAnnotationSelection();
-    connectAnnotationGroupSelection();
+    //connectAnnotationSelection();
+    //connectAnnotationGroupSelection();
     connect(tree, SIGNAL(itemSelectionChanged()), SLOT(sl_onItemSelectionChanged()));
 
     connect(AppContext::getAnnotationsSettingsRegistry(), SIGNAL(si_annotationSettingsChanged(const QStringList &)),
@@ -188,7 +337,7 @@ AnnotationsTreeView::AnnotationsTreeView(AnnotatedDNAView* _ctx) : ctx(_ctx), dn
 
     removeObjectsFromViewAction = new QAction(tr("Selected objects with annotations from view"), this);
     removeObjectsFromViewAction->setObjectName("Selected objects with annotations from view");
-    removeObjectsFromViewAction->setShortcut(QKeySequence(Qt::SHIFT| Qt::Key_Delete));
+    removeObjectsFromViewAction->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Delete));
     removeObjectsFromViewAction->setShortcutContext(Qt::WidgetShortcut);
     connect(removeObjectsFromViewAction, SIGNAL(triggered()), SLOT(sl_removeObjectFromView()));
     tree->addAction(removeObjectsFromViewAction);
@@ -216,11 +365,11 @@ AnnotationsTreeView::AnnotationsTreeView(AnnotatedDNAView* _ctx) : ctx(_ctx), dn
     searchQualifierAction = new QAction(tr("Find qualifier..."), this);
     searchQualifierAction->setObjectName("find_qualifier_action");
     searchQualifierAction->setIcon(QIcon(":core/images/zoom_whole.png"));
-    connect (searchQualifierAction, SIGNAL(triggered()), SLOT(sl_searchQualifier()));
+    connect(searchQualifierAction, SIGNAL(triggered()), SLOT(sl_searchQualifier()));
 
     invertAnnotationSelectionAction = new QAction(tr("Invert annotation selection"), this);
     invertAnnotationSelectionAction->setObjectName("invert_selection_action");
-    connect (invertAnnotationSelectionAction, SIGNAL(triggered()), SLOT(sl_invertSelection()));
+    connect(invertAnnotationSelectionAction, SIGNAL(triggered()), SLOT(sl_invertSelection()));
 
     copyColumnTextAction = new QAction(tr("Copy column text"), this);
     connect(copyColumnTextAction, SIGNAL(triggered()), SLOT(sl_onCopyColumnText()));
@@ -346,7 +495,7 @@ So can only be used for annotations that belongs to some object */
 QList<AVAnnotationItem *> AnnotationsTreeView::findAnnotationItems(Annotation *a) const {
     QList<AVAnnotationItem *> res;
 
-    SAFE_POINT(NULL != a->getGObject() && ctx->getAnnotationObjects(true).contains(a->getGObject()), "Invalid annotation table!", res);
+    SAFE_POINT(NULL != a->getGObject() && annTableObjects.contains(a->getGObject()), "Invalid annotation table!", res);
 
     AnnotationGroup *g = a->getGroup();
     AVGroupItem *gItem = findGroupItem(g);
@@ -394,22 +543,35 @@ void AnnotationsTreeView::removeGroupAnnotationsFromCache(const AVGroupItem *gro
 }
 
 void AnnotationsTreeView::onSequenceAdded(ADVSequenceObjectContext* advContext) {
+    connect(advContext, SIGNAL(si_annotationObjectAdded(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectAdded(AnnotationTableObject*)));
+    connect(advContext, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectRemoved(AnnotationTableObject*)));
+
     connect(advContext, SIGNAL(si_annotationSelection(AnnotationSelectionData*)), SLOT(sl_annotationClicked(AnnotationSelectionData*)));
     connect(advContext, SIGNAL(si_annotationSequenceSelection(AnnotationSelectionData*)), SLOT(sl_annotationDoubleClicked(AnnotationSelectionData*)));
     connect(advContext, SIGNAL(si_clearSelectedAnnotationRegions()), SLOT(sl_clearSelectedAnnotations()));
 }
 
-void AnnotationsTreeView::connectAnnotationSelection() {
-    connect(ctx->getAnnotationsSelection(),
-            SIGNAL(si_selectionChanged(AnnotationSelection *, const QList<Annotation *> &, const QList<Annotation *> &)),
-            SLOT(sl_onAnnotationSelectionChanged(AnnotationSelection *, const QList<Annotation *> &, const QList<Annotation *> &)));
+void AnnotationsTreeView::onSequenceRemoved(ADVSequenceObjectContext* advContext) {
+    disconnect(advContext, SIGNAL(si_annotationSelection(AnnotationSelectionData*)), this, SLOT(sl_annotationClicked(AnnotationSelectionData*)));
+    disconnect(advContext, SIGNAL(si_annotationSequenceSelection(AnnotationSelectionData*)), this, SLOT(sl_annotationDoubleClicked(AnnotationSelectionData*)));
+    disconnect(advContext, SIGNAL(si_clearSelectedAnnotationRegions()), this, SLOT(sl_clearSelectedAnnotations()));
 }
 
-void AnnotationsTreeView::connectAnnotationGroupSelection() {
-    connect(ctx->getAnnotationsGroupSelection(),
-            SIGNAL(si_selectionChanged(AnnotationGroupSelection *, const QList<AnnotationGroup *> &, const QList<AnnotationGroup *> &)),
-            SLOT(sl_onAnnotationGroupSelectionChanged(AnnotationGroupSelection *, const QList<AnnotationGroup *> &, const QList<AnnotationGroup *> &)));
+void AnnotationsTreeView::addAnnotationTableObject(AnnotationTableObject* annTableObj) {
+    annTableObjects.append(annTableObj);
 }
+
+//void AnnotationsTreeView::connectAnnotationSelection() {
+//    connect(ctx->getAnnotationsSelection(),
+//            SIGNAL(si_selectionChanged(AnnotationSelection *, const QList<Annotation *> &, const QList<Annotation *> &)),
+//            SLOT(sl_onAnnotationSelectionChanged(AnnotationSelection *, const QList<Annotation *> &, const QList<Annotation *> &)));
+//}
+//
+//void AnnotationsTreeView::connectAnnotationGroupSelection() {
+//    connect(ctx->getAnnotationsGroupSelection(),
+//            SIGNAL(si_selectionChanged(AnnotationGroupSelection *, const QList<AnnotationGroup *> &, const QList<AnnotationGroup *> &)),
+//            SLOT(sl_onAnnotationGroupSelectionChanged(AnnotationGroupSelection *, const QList<AnnotationGroup *> &, const QList<AnnotationGroup *> &)));
+//}
 
 void AnnotationsTreeView::sl_onItemSelectionChanged() {
     AnnotationSelection* as = ctx->getAnnotationsSelection();
@@ -451,8 +613,8 @@ void AnnotationsTreeView::sl_onItemSelectionChanged() {
         }
     }
 
-    connectAnnotationSelection();
-    connectAnnotationGroupSelection();
+    ctx->connectAnnotationSelection();
+    ctx->connectAnnotationGroupSelection();
     updateState();
 }
 
@@ -529,6 +691,9 @@ void AnnotationsTreeView::sl_onAnnotationGroupSelectionChanged(AnnotationGroupSe
 }
 
 void AnnotationsTreeView::sl_onAnnotationObjectAdded(AnnotationTableObject *obj) {
+    CHECK(!annTableObjects.contains(obj), );
+    annTableObjects.append(obj);
+
     TreeSorter ts(this);
     Q_UNUSED(ts);
 
@@ -1010,7 +1175,8 @@ void AnnotationsTreeView::sl_pasteFinished(Task* _pasteTask){
     }
     foreach (Document* doc, docs){
         foreach(GObject *annObj, doc->findGObjectByType(GObjectTypes::ANNOTATION_TABLE)) {
-            ctx->tryAddObject(annObj);
+            emit si_tryAddObject(annObj);
+            //ctx->tryAddObject(annObj);
         }
     }
 }
@@ -1105,7 +1271,8 @@ void AnnotationsTreeView::sl_removeObjectFromView() {
         if (AutoAnnotationsSupport::isAutoAnnotation(obj)) {
             continue;
         }
-        ctx->removeObject(obj);
+        emit si_removeObject(obj);
+        //ctx->removeObject(obj);
     }
 }
 
@@ -1256,7 +1423,7 @@ bool AnnotationsTreeView::eventFilter(QObject* o, QEvent* e) {
                 const AVItem *avi = static_cast<const AVItem *>(item);
                 if (AVItemType_Annotation == avi->type) {
                     const AVAnnotationItem *ai = static_cast<const AVAnnotationItem *>(avi);
-                    const ADVSequenceObjectContext *sc = ctx->getSequenceContext(ai->getAnnotationTableObject());
+                    const ADVSequenceObjectContext *sc = getSequenceContext(ai->getAnnotationTableObject());
                     const bool seqObjectContextValid = (NULL != sc);
                     const QString tip = Annotation::getQualifiersTip(ai->annotation->getData(), 15,
                         seqObjectContextValid ? sc->getSequenceObject() : NULL,
@@ -1783,16 +1950,14 @@ void AnnotationsTreeView::sl_sequenceAdded(ADVSequenceObjectContext* advContext)
 }
 
 void AnnotationsTreeView::sl_sequenceRemoved(ADVSequenceObjectContext* advContext) {
-    disconnect(advContext, SIGNAL(si_annotationSelection(AnnotationSelectionData*)), this, SLOT(sl_annotationClicked(AnnotationSelectionData*)));
-    disconnect(advContext, SIGNAL(si_annotationSequenceSelection(AnnotationSelectionData*)), this, SLOT(sl_annotationDoubleClicked(AnnotationSelectionData*)));
-    disconnect(advContext, SIGNAL(si_clearSelectedAnnotationRegions()), this, SLOT(sl_clearSelectedAnnotations()));
+    onSequenceRemoved(advContext);
 }
 
 //TODO: refactoring of annotationClicked and annotationDoubleClicked methods.
 //It's too difficult to understand what's going on in this methods
 //UTI-155
 void AnnotationsTreeView::annotationClicked(AVAnnotationItem* item, QMap<AVAnnotationItem*, QList<U2Region> > selectedAnnotations, const QList<U2Region>& selectedRegions) {
-    ADVSequenceObjectContext* seqObjCtx = ctx->getSequenceContext(item->getAnnotationTableObject());
+    ADVSequenceObjectContext* seqObjCtx = getSequenceContext(item->getAnnotationTableObject());
     SAFE_POINT(seqObjCtx != NULL, "ADVSequenceObjectContext is NULL", );
 
     DNASequenceSelection* sequenceSelection = seqObjCtx->getSequenceSelection();
@@ -1840,7 +2005,7 @@ void AnnotationsTreeView::annotationClicked(AVAnnotationItem* item, QMap<AVAnnot
 void AnnotationsTreeView::annotationDoubleClicked(AVAnnotationItem* item, const QList<U2Region>& selectedRegions, const int numOfClickedRegion) {
     selectedAnnotation[item] << selectedRegions;
 
-    ADVSequenceObjectContext* seqObjCtx = ctx->getSequenceContext(item->getAnnotationTableObject());
+    ADVSequenceObjectContext* seqObjCtx = getSequenceContext(item->getAnnotationTableObject());
     SAFE_POINT(seqObjCtx != NULL, "ADVSequenceObjectContext is NULL", );
 
     DNASequenceSelection* sequenceSelection = seqObjCtx->getSequenceSelection();
@@ -1874,6 +2039,25 @@ void AnnotationsTreeView::clearSelectedNotAnnotations() {
             item->setSelected(false);
         }
     }
+}
+
+void AnnotationsTreeView::connectContextSlots(ADVSequenceObjectContext* context) const {
+    connect(context, SIGNAL(si_annotationObjectAdded(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectAdded(AnnotationTableObject*)));
+    connect(context, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)), SLOT(sl_onAnnotationObjectRemoved(AnnotationTableObject*)));
+    connect(context, SIGNAL(si_sequenceAdded(ADVSequenceObjectContext*)), SLOT(sl_sequenceAdded(ADVSequenceObjectContext*)));
+    connect(context, SIGNAL(si_sequenceRemoved(ADVSequenceObjectContext*)), SLOT(sl_sequenceRemoved(ADVSequenceObjectContext*)));
+}
+
+ADVSequenceObjectContext* AnnotationsTreeView::getSequenceContext(AnnotationTableObject *obj) const {
+    SAFE_POINT(annTableObjects.contains(obj), "Unexpected annotation table detected!", NULL);
+
+    foreach(ADVSequenceObjectContext *seqCtx, seqContexts) {
+        QSet<AnnotationTableObject *> aObjs = seqCtx->getAnnotationObjects(true);
+        if (aObjs.contains(obj)) {
+            return seqCtx;
+        }
+    }
+    return nullptr;
 }
 
 void AnnotationsTreeView::sl_onCopyQualifierValue() {
@@ -2234,6 +2418,98 @@ void AnnotationsTreeView::sl_annotationObjectModifiedStateChanged() {
 
 AVItem * AnnotationsTreeView::currentItem() {
     return static_cast<AVItem *>(tree->currentItem());
+}
+
+void AnnotationsTreeView::buildPopupMenu(QMenu* menu) {
+    // Add actions that not depends on the point popup is called
+    adjustMenu(menu);
+
+    QPoint globalPos = QCursor::pos();
+    QPoint treePos = tree->mapFromGlobal(globalPos);
+    if (!tree->rect().contains(treePos)) {
+        return;
+    }
+
+    // Check is popup is called for column header
+    QHeaderView* header = tree->header();
+    QPoint headerPoint = header->mapFromGlobal(globalPos);
+    if (header->rect().contains(headerPoint)) {
+        int idx = header->logicalIndexAt(headerPoint);
+        if (idx >= 3) {
+            assert(idx - 3 < qColumns.size());
+            lastClickedColumn = idx;
+            removeColumnByHeaderClickAction->setText(tr("Hide '%1' column").arg(qColumns[lastClickedColumn - 3]));
+            QAction* first = menu->actions().first();
+            menu->insertAction(first, removeColumnByHeaderClickAction);
+            menu->insertSeparator(first);
+        }
+        return;
+    }
+
+    //Ensure that item clicked is in the tree selection. Do not destroy multi-selection if present
+    QList<QTreeWidgetItem*> selItems = tree->selectedItems();
+    QPoint viewportPos = tree->viewport()->mapFromGlobal(globalPos);
+    if (selItems.size() <= 1) {
+        QTreeWidgetItem* item = tree->itemAt(viewportPos);
+        if (item != NULL) {
+            if (selItems.size() == 1 && selItems.first() != item) {
+                tree->setItemSelected(selItems.first(), false);
+            }
+            tree->setItemSelected(item, true);
+        }
+    }
+
+    //Update column sensitive actions that appears only in context menu
+    selItems = tree->selectedItems();
+    lastClickedColumn = tree->columnAt(viewportPos.x());
+    updateColumnContextActions(selItems.size() == 1 ? static_cast<AVItem*>(selItems.first()) : static_cast<AVItem*>(NULL), lastClickedColumn);
+
+    if (selItems.size() == 1) {
+        AVItem* avItem = static_cast<AVItem*>(selItems.first());
+        AnnotationTableObject *aObj = avItem->getAnnotationTableObject();
+        if (AutoAnnotationsSupport::isAutoAnnotation(aObj) && !aObj->getAnnotations().isEmpty()) {
+            if (avItem->parent() != NULL) {
+                menu->addAction(exportAutoAnnotationsGroup);
+            }
+        }
+    }
+
+    //Add active context actions to the top level menu
+    QList<QAction*> contextActions;
+    contextActions << toggleQualifierColumnAction;
+
+    QList<QAction *> copySubmenuActions;
+    copySubmenuActions << copyQualifierAction << copyQualifierURLAction << copyColumnTextAction
+        << copyColumnURLAction;
+
+    QMenu* copyMenu = GUIUtils::findSubMenu(menu, ADV_MENU_COPY);
+    SAFE_POINT(copyMenu != NULL, "copyMenu", );
+    foreach(QAction* a, copySubmenuActions) {
+        if (a->isEnabled()) {
+            copyMenu->addAction(a);
+        }
+    }
+    int nActive = 0;
+    QAction* first = menu->actions().first();
+    menu->insertAction(first, searchQualifierAction);
+    menu->insertAction(first, invertAnnotationSelectionAction);
+
+    QMenu* editMenu = GUIUtils::findSubMenu(menu, ADV_MENU_EDIT);
+    SAFE_POINT(editMenu != NULL, L10N::nullPointerError(ADV_MENU_EDIT), );
+    if (editAction->isEnabled()) {
+        editMenu->addAction(editAction);
+    }
+
+    menu->insertSeparator(first);
+    foreach(QAction* a, contextActions) {
+        if (a->isEnabled()) {
+            nActive++;
+            menu->insertAction(first, a);
+        }
+    }
+    if (nActive > 0) {
+        menu->insertSeparator(first);
+    }
 }
 
 void AnnotationsTreeView::sl_exportAutoAnnotationsGroup() {
