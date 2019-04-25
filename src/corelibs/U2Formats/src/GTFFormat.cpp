@@ -142,7 +142,6 @@ QMap<QString, QList<SharedAnnotationData> > GTFFormat::parseDocument(IOAdapter *
 
     bool fileIsValid = true;
     int lineNumber = 1;
-    bool geneIdOrTranscriptIdQalNotFound = false;
     while (readGTFLine(qstrbuf, io, buff, os) > 0) {
 
         if (qstrbuf.startsWith("track")) { //skip comments
@@ -227,10 +226,6 @@ QMap<QString, QList<SharedAnnotationData> > GTFFormat::parseDocument(IOAdapter *
                 " format at line %1!").arg(lineNumber));
         }
 
-        if (!geneIdOrTranscriptIdQalNotFound || validationStatus.isGeneIdAbsent() || validationStatus.isTranscriptIdAbsent()) {
-            geneIdOrTranscriptIdQalNotFound = true;
-        }
-
         // Verify the strand
         if (validationStatus.isIncorrectStrand()) {
             // Write the error to the log, but open the file
@@ -251,10 +246,6 @@ QMap<QString, QList<SharedAnnotationData> > GTFFormat::parseDocument(IOAdapter *
 
     if (!fileIsValid) {
         ioLog.error("GTF parsing error: one or more errors occurred while parsing the input file, see TRACE and INFO log for details!");
-    }
-
-    if (geneIdOrTranscriptIdQalNotFound) {
-        ioLog.info(QString("The %1 file GTF format is not strict - some annotations do not have 'gene_id' and/or 'transcript_id' qualifiers.").arg(io->getURL().getURLString()));
     }
 
     return result;
@@ -546,6 +537,7 @@ void GTFFormat::storeDocument(Document *doc, IOAdapter *io, U2OpStatus &os) {
     }
 
     QByteArray lineData;
+    bool geneIdOrTranscriptIdQalNotFound = false;
 
     foreach (GObject* annotTable, annotTables) {
         AnnotationTableObject *annTable = qobject_cast<AnnotationTableObject *>(annotTable);
@@ -613,15 +605,8 @@ void GTFFormat::storeDocument(Document *doc, IOAdapter *io, U2OpStatus &os) {
                         }
                     }
                 }
-                if (geneIdAttributeStr.isEmpty()) {
-                    os.setError(tr("Can't save an annotation to a GTF file"
-                     " - the annotation doesn't have the '%1' qualifier!").arg(GENE_ID_QUALIFIER_NAME));
-                    return;
-                }
-                if (transcriptIdAttributeStr.isEmpty()) {
-                    os.setError(tr("Can't save an annotation to a GTF file"
-                     " - the annotation doesn't have the '%1' qualifier!").arg(TRANSCRIPT_ID_QUALIFIER_NAME));
-                    return;
+                if (!geneIdOrTranscriptIdQalNotFound && (geneIdAttributeStr.isEmpty() || transcriptIdAttributeStr.isEmpty())) {
+                    geneIdOrTranscriptIdQalNotFound = true;
                 }
                 lineFields[GTF_ATTRIBUTES_INDEX] = geneIdAttributeStr +
                     transcriptIdAttributeStr +
@@ -635,6 +620,9 @@ void GTFFormat::storeDocument(Document *doc, IOAdapter *io, U2OpStatus &os) {
                 }
             }
         }
+    }
+    if (geneIdOrTranscriptIdQalNotFound) {
+        ioLog.info(QString("The %1 file GTF format is not strict - some annotations do not have 'gene_id' and/or 'transcript_id' qualifiers.").arg(io->getURL().getURLString()));
     }
 }
 
