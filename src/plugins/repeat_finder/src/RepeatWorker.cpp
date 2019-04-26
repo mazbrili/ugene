@@ -66,6 +66,20 @@ static const QString USE_MIN_DISTANCE_ATTR("use-mindistance");
 
 const QString RepeatWorkerFactory::ACTOR_ID("repeats-search");
 
+FindRepeatsTaskSettings defaultSettings() {
+    FindRepeatsTaskSettings res;
+    res.minLen = 5;
+    res.setIdentity(100);
+    bool minDistCheck = true;
+    bool maxDistCheck = true;
+    res.minDist = 0;
+    res.maxDist = 0;
+    res.inverted = false;
+    res.excludeTandems = false;
+    res.filter = DisjointRepeats;
+    return res;
+}
+
 void RepeatWorkerFactory::init() {
     QList<PortDescriptor*> p; 
     QList<Attribute*> a;
@@ -96,7 +110,7 @@ void RepeatWorkerFactory::init() {
         Descriptor umaxd(USE_MAX_DISTANCE_ATTR, RepeatWorker::tr("Apply 'Max distance' attribute"), RepeatWorker::tr("Apply 'Max distance' attribute."));
         Descriptor umind(USE_MIN_DISTANCE_ATTR, RepeatWorker::tr("Apply 'Min distance' attribute"), RepeatWorker::tr("Apply 'Min distance' attribute."));
 
-        FindRepeatsTaskSettings cfg = FindRepeatsDialog::defaultSettings();
+      FindRepeatsTaskSettings cfg = defaultSettings();
         Attribute *aa;
         a << new Attribute(nd, BaseTypes::STRING_TYPE(), true, "repeat_unit");
         aa = new Attribute(ld, BaseTypes::NUM_TYPE(), false);
@@ -110,7 +124,7 @@ void RepeatWorkerFactory::init() {
         aa->setAttributeValue(cfg.minDist);
         aa->addRelation(new VisibilityRelation(USE_MIN_DISTANCE_ATTR, true));
         a << aa;
-        a << new Attribute(umaxd, BaseTypes::BOOL_TYPE(), false, false);
+        a << new Attribute(umaxd, BaseTypes::BOOL_TYPE(), false, true);
         aa = new Attribute(mad, BaseTypes::NUM_TYPE(), false);
         aa->setAttributeValue(cfg.maxDist);
         aa->addRelation(new VisibilityRelation(USE_MAX_DISTANCE_ATTR, true));
@@ -147,7 +161,7 @@ void RepeatWorkerFactory::init() {
     delegates[MIN_DIST_ATTR] = new SpinBoxDelegate(minDistProperties);
     
     QVariantMap maxDistProperties;
-    maxDistProperties["minimum"] = 1;
+    maxDistProperties["minimum"] = 0;
     maxDistProperties["maximum"] = INT_MAX;
     maxDistProperties["suffix"] = L10N::suffixBp();
     delegates[MAX_DIST_ATTR] = new SpinBoxDelegate(maxDistProperties);

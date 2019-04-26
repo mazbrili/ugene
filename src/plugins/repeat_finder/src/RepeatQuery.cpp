@@ -312,16 +312,22 @@ QDRepeatActorPrototype::QDRepeatActorPrototype() {
 
     QMap<QString, PropertyDelegate*> delegates;
     {
-        QVariantMap m; m["minimum"] = 2; m["maximum"] = INT_MAX; m["suffix"] = L10N::suffixBp();
+        QVariantMap m; m["minimum"] = 0; 
+        m["maximum"] = INT_MAX; 
+        m["suffix"] = L10N::suffixBp();
         delegates[LEN_ATTR] = new SpinBoxDelegate(m);
         delegates[MAX_LEN_ATTR] = new SpinBoxDelegate(m);
     }
     {
-        QVariantMap m; m["minimum"] = 50; m["maximum"] = 100; m["suffix"] = "%";
+        QVariantMap m; 
+        m["minimum"] = 50; 
+        m["maximum"] = 100;
+        m["suffix"] = "%";
         delegates[IDENTITY_ATTR] = new SpinBoxDelegate(m);
     }
     {
-        QVariantMap m; m["specialValueText"] = "Auto";
+        QVariantMap m; 
+        m["specialValueText"] = "Auto";
         delegates[THREADS_ATTR] = new SpinBoxDelegate(m);
     }
     {
