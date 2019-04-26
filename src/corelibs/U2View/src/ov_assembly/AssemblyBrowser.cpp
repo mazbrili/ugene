@@ -74,6 +74,7 @@
 #include <U2View/SequenceObjectContext.h>
 
 #include "annotations/AssemblyAnnotationsArea.h"
+#include "annotations/tree_view/AssemblyAnnotationsTreeViewModel.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyBrowserFactory.h"
 #include "AssemblyBrowserSettings.h"
@@ -136,8 +137,10 @@ void AssemblyBrowser::sl_referenceChanged() {
     removeReferenceSequence();
 
     U2SequenceObject *so = model->getRefObj();
-    if (so != NULL) {
-        model->setSequenceObjectContext(new SequenceObjectContext(so, nullptr));
+    if (so != nullptr) {
+        SequenceObjectContext* seqCtx = new SequenceObjectContext(so, nullptr);
+        model->setSequenceObjectContext(seqCtx);
+        //setAnnotationTreeViewModel(seqCtx);
         addObjectToView(so);
     }
     setReferenceAction->setEnabled(!model->isLoadingReference());
@@ -1153,6 +1156,7 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
                                                       readsArea(nullptr),
                                                       variantsArea(nullptr),
                                                       annotationsArea(nullptr),
+                                                      annotationsTreeView(nullptr),
                                                       nothingToVisualize(true) {
     U2OpStatusImpl os;
     if(browser->getModel()->hasReads(os)) { // has mapped reads -> show rich visualization
@@ -1169,12 +1173,16 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
         variantsArea = new AssemblyVariantsArea(this);
         annotationsArea = new AssemblyAnnotationsArea(this);
+        annotationsTreeView = new QTreeView(this);
+        AssemblyAnnotationsTreeViewModel* newModel = new AssemblyAnnotationsTreeViewModel(this);
+        annotationsTreeView->setModel(newModel);
 
         QVBoxLayout *mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);
         mainLayout->setSpacing(2);
         mainLayout->addWidget(zoomableOverview);
         mainLayout->addWidget(annotationsArea);
+        mainLayout->addWidget(annotationsTreeView);
 
         QGridLayout * readsLayout = new QGridLayout();
         readsLayout->setMargin(0);
