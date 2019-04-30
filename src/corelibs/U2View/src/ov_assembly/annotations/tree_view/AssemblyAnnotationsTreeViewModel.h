@@ -28,9 +28,11 @@
 
 namespace U2 {
 
+class Annotation;
 class AnnotationTableObject;
 class AssemblyAnnotationsTreeItem;
 class SequenceObjectContext;
+class U2Qualifier;
 
 class AssemblyAnnotationsTreeViewModel : public QAbstractItemModel {
     Q_OBJECT
@@ -53,13 +55,23 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
+    //bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
 
-//private slots:
-//    void sl_objectAdded(GObject *obj);
-//    void sl_objectRemoved(GObject *obj);
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+private slots:
+    void sl_annotationObjectAdded(AnnotationTableObject* obj);
+    void sl_annotationObjectRemoved(AnnotationTableObject* obj);
+    void sl_contextChanged(SequenceObjectContext* ctx);
 
 private:
-    void init();
+    void updateTreeView();
+    void addAnnotationTableObject(AnnotationTableObject *newObj);
+    void addAnnotations(const QList<Annotation*>& annotations, AssemblyAnnotationsTreeItem* parentItem);
+    void addQualifiers(const QList<U2Qualifier>& qualifiers, AssemblyAnnotationsTreeItem* parentItem);
+    QVariantList getTableObjData(AnnotationTableObject* obj) const;
+    QVariantList getAnnotationData(Annotation* ann) const;
+    QVariantList getQualifierData(const U2Qualifier& qualifier) const;
 
     AssemblyAnnotationsTreeItem* rootItem;
     SequenceObjectContext* ctx;

@@ -192,6 +192,8 @@ private:
     void setReference(const Document *doc);
     void addAnnotationView(U2SequenceObject* seqObj);
     void addAnnotationTableObjectToView(AnnotationTableObject* annTableObj);
+    void connectContextWithAnnotationTreeModel(SequenceObjectContext* ctx);
+    QAbstractItemModel* getAnnotationTreeViewModel() const;
 
 private:
     AssemblyBrowserUi * ui;

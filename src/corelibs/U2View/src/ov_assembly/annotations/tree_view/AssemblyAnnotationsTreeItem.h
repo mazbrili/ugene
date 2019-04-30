@@ -33,8 +33,8 @@ public:
     ~AssemblyAnnotationsTreeItem();
 
     void addChild(AssemblyAnnotationsTreeItem* child);
-    AssemblyAnnotationsTreeItem* getChild(const int row);
-    AssemblyAnnotationsTreeItem* getParent();
+    AssemblyAnnotationsTreeItem* getChild(const int row) const;
+    AssemblyAnnotationsTreeItem* getParent() const;
 
     QVariant getData(int column) const;
 

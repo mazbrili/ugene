@@ -36,11 +36,11 @@ void AssemblyAnnotationsTreeItem::addChild(AssemblyAnnotationsTreeItem* child) {
     children.append(child);
 }
 
-AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::getChild(const int row) {
+AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::getChild(const int row) const {
     return children.value(row);
 }
 
-AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::getParent() {
+AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::getParent() const {
     return parent;
 }
 
@@ -57,7 +57,7 @@ int AssemblyAnnotationsTreeItem::columnCount() const {
 }
 
 int AssemblyAnnotationsTreeItem::getRowNum() const {
-    CHECK(nullptr != parent, -1);
+    CHECK(nullptr != parent, 0);
     return parent->children.indexOf(const_cast<AssemblyAnnotationsTreeItem*>(this));
 }
 

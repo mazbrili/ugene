@@ -20,6 +20,8 @@
  */
 
 #include <U2Core/AnnotationTableObject.h>
+#include <U2Core/DocumentModel.h>
+#include <U2Core/U2Qualifier.h>
 #include <U2Core/U2SafePoints.h>
 
 #include <U2View/SequenceObjectContext.h>
@@ -32,23 +34,17 @@ namespace U2 {
 AssemblyAnnotationsTreeViewModel::AssemblyAnnotationsTreeViewModel(QObject *parent) : QAbstractItemModel(parent) {
     QVariantList rootData = { tr("Name"), tr("Value") };
     rootItem = new AssemblyAnnotationsTreeItem(rootData);
-    init();
 }
 
 AssemblyAnnotationsTreeViewModel::~AssemblyAnnotationsTreeViewModel() {
     delete rootItem;
 }
 
-QModelIndex AssemblyAnnotationsTreeViewModel::index(int row, int column, const QModelIndex &parent) const {
-    CHECK(hasIndex(row, column, parent), QModelIndex());
+QModelIndex AssemblyAnnotationsTreeViewModel::index(int row, int column, const QModelIndex &index) const {
+    CHECK(hasIndex(row, column, index), QModelIndex());
 
-    AssemblyAnnotationsTreeItem* parentItem = !parent.isValid() ? rootItem
-                            : static_cast<AssemblyAnnotationsTreeItem*>(parent.internalPointer());
-    //if (parent.isValid()) {
-    //    parentItem = static_cast<AssemblyAnnotationsTreeItem*>(parent.internalPointer());
-    //} else {
-    //    parentItem = rootItem;
-    //}
+    AssemblyAnnotationsTreeItem* parentItem = !index.isValid() ? rootItem
+                            : static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
 
     AssemblyAnnotationsTreeItem* childItem = parentItem->getChild(row);
     CHECK(nullptr != childItem, QModelIndex());
@@ -56,12 +52,13 @@ QModelIndex AssemblyAnnotationsTreeViewModel::index(int row, int column, const Q
     return createIndex(row, column, childItem);
 }
 
-QModelIndex AssemblyAnnotationsTreeViewModel::parent(const QModelIndex &child) const {
-    CHECK(child.isValid(), QModelIndex());
+QModelIndex AssemblyAnnotationsTreeViewModel::parent(const QModelIndex &index) const {
+    CHECK(index.isValid(), QModelIndex());
 
-    AssemblyAnnotationsTreeItem *childItem = static_cast<AssemblyAnnotationsTreeItem*>(child.internalPointer());
-    AssemblyAnnotationsTreeItem *parentItem = childItem->getParent();
-    CHECK(childItem != parentItem, QModelIndex());
+    AssemblyAnnotationsTreeItem *item = static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    AssemblyAnnotationsTreeItem *parentItem = item->getParent();
+    //CHECK(item != parentItem, QModelIndex());
+    CHECK(nullptr != parentItem, QModelIndex());
 
     return createIndex(parentItem->getRowNum(), 0, parentItem);
 }
@@ -79,39 +76,189 @@ QVariant AssemblyAnnotationsTreeViewModel::data(const QModelIndex &index, int ro
     return item->getData(index.column());
 }
 
-int AssemblyAnnotationsTreeViewModel::rowCount(const QModelIndex &parent) const {
-    CHECK(parent.column() <= 0, 0);
+int AssemblyAnnotationsTreeViewModel::rowCount(const QModelIndex &index) const {
+    //CHECK(index.column() <= 0, 0);
+    //int c = index.column();
 
-    AssemblyAnnotationsTreeItem *parentItem = !parent.isValid() ? rootItem
-                        : static_cast<AssemblyAnnotationsTreeItem*>(parent.internalPointer());
-    //if (parent.column() > 0)
-    //    return 0;
-    //if (!parent.isValid())
-    //    parentItem = rootItem;
-    //else
-    //    parentItem = static_cast<TreeItem*>(parent.internalPointer());
-    return parentItem->childrenCount();
+    AssemblyAnnotationsTreeItem *indexItem = !index.isValid() ? rootItem
+                        : static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    return indexItem->childrenCount();
 }
 
-int AssemblyAnnotationsTreeViewModel::columnCount(const QModelIndex &parent) const {
-    AssemblyAnnotationsTreeItem *parentItem = !parent.isValid() ? rootItem
-                        : static_cast<AssemblyAnnotationsTreeItem*>(parent.internalPointer());
-    return parentItem->columnCount();
+int AssemblyAnnotationsTreeViewModel::columnCount(const QModelIndex &index) const {
+    AssemblyAnnotationsTreeItem *indexItem = !index.isValid() ? rootItem
+                        : static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    return indexItem->columnCount();
 }
 
-//void AssemblyAnnotationsTreeViewModel::sl_objectAdded(GObject *obj) {
+//bool AssemblyAnnotationsTreeViewModel::insertRows(int row, int count, const QModelIndex &parent) {
+//    beginInsertRows(parent, row, row + count - 1);
 //
+//    AnnotationTableObject* newObj = annTableObjects.last();
+//    QVariantList tableObjData = getTableObjData(newObj);
+//    AssemblyAnnotationsTreeItem* tableObjItem = new AssemblyAnnotationsTreeItem(tableObjData, rootItem);
+//    rootItem->addChild(tableObjItem);
+//    endInsertRows();
+//    addAnnotations(newObj->getAnnotations(), tableObjItem);
+//
+//    //QModelIndex tableObjectIndex = createIndex(tableObjItem->getRowNum(), 0, tableObjItem);
+//    //QList<Annotation*> annList = newObj->getAnnotations();
+//    //beginInsertRows(tableObjectIndex, 0, annList.size() - 1);
+//    //foreach(Annotation* ann, annList) {
+//    //    QVariantList annData = getAnnotationData(ann);
+//    //    AssemblyAnnotationsTreeItem* annObjItem = new AssemblyAnnotationsTreeItem(annData, tableObjItem);
+//    //    tableObjItem->addChild(annObjItem);
+//    //    QModelIndex annotationObjectIndex = createIndex(annObjItem->getRowNum(), 0, annObjItem);
+//    //    QVector<U2Qualifier> qualifiers = ann->getQualifiers();
+//    //    beginInsertRows(annotationObjectIndex, 0, qualifiers.size() - 1);
+//    //    foreach(const U2Qualifier& qualifier, qualifiers) {
+//    //        QVariantList qualifierData = getQualifierData(qualifier);
+//    //        AssemblyAnnotationsTreeItem* qualifierItem = new AssemblyAnnotationsTreeItem(qualifierData, annObjItem);
+//    //        annObjItem->addChild(qualifierItem);
+//    //    }
+//    //    endInsertRows();
+//    //    endInsertRows();
+//    //}
+//
+//
+//    return true;
 //}
-//
-//void AssemblyAnnotationsTreeViewModel::sl_objectRemoved(GObject *obj) {
-//
-//}
 
-void AssemblyAnnotationsTreeViewModel::init() {
+Qt::ItemFlags AssemblyAnnotationsTreeViewModel::flags(const QModelIndex &index) const {
+    CHECK(index.isValid(), 0);
+
+    return QAbstractItemModel::flags(index);
+}
+
+void AssemblyAnnotationsTreeViewModel::sl_annotationObjectAdded(AnnotationTableObject *obj) {
+    addAnnotationTableObject(obj);
+}
+
+void AssemblyAnnotationsTreeViewModel::sl_annotationObjectRemoved(AnnotationTableObject *obj) {
+    AssemblyAnnotationsTreeItem* item = rootItem->getChild(annTableObjects.indexOf(obj));
+    CHECK(nullptr != item, );
+
+    delete item;
+    annTableObjects.removeOne(obj);
+}
+
+void AssemblyAnnotationsTreeViewModel::sl_contextChanged(SequenceObjectContext* _ctx) {
+    ctx = _ctx;
+    updateTreeView();
+}
+
+void AssemblyAnnotationsTreeViewModel::updateTreeView() {
+    CHECK(nullptr != ctx, );
+
+    foreach(AnnotationTableObject* aObj, ctx->getAnnotationObjects()) {
+        addAnnotationTableObject(aObj);
+    }
+}
+
+void AssemblyAnnotationsTreeViewModel::addAnnotationTableObject(AnnotationTableObject* newObj) {
+    CHECK(!annTableObjects.contains(newObj), );
+
+    annTableObjects << newObj;
+
+    beginInsertRows(QModelIndex(), 0, 0);
+
+    QVariantList tableObjData = getTableObjData(newObj);
+    AssemblyAnnotationsTreeItem* tableObjItem = new AssemblyAnnotationsTreeItem(tableObjData, rootItem);
+    rootItem->addChild(tableObjItem);
+    endInsertRows();
+    addAnnotations(newObj->getAnnotations(), tableObjItem);
+
+    //QVariantList tableObjData = getTableObjData(newObj);
+    //AssemblyAnnotationsTreeItem* tableObjItem = new AssemblyAnnotationsTreeItem(tableObjData, rootItem);
+    //rootItem->addChild(tableObjItem);
+    //addAnnotations(newObj->getAnnotations(), tableObjItem);
+}
+
+void AssemblyAnnotationsTreeViewModel::addAnnotations(const QList<Annotation*>& annotations,
+                                                      AssemblyAnnotationsTreeItem* parentItem) {
+    CHECK(!annotations.isEmpty(), );
+
+    QModelIndex tableObjectIndex = createIndex(parentItem->getRowNum(), 0, parentItem);
+    foreach(Annotation* ann, annotations) {
+        beginInsertRows(tableObjectIndex, annotations.indexOf(ann), annotations.indexOf(ann));
+        QVariantList annData = getAnnotationData(ann);
+        AssemblyAnnotationsTreeItem* annObjItem = new AssemblyAnnotationsTreeItem(annData, parentItem);
+        parentItem->addChild(annObjItem);
+        endInsertRows();
+
+        addQualifiers(ann->getQualifiers().toList(), annObjItem);
+        //QModelIndex annotationObjectIndex = createIndex(annObjItem->getRowNum(), 0, annObjItem);
+        //QVector<U2Qualifier> qualifiers = ann->getQualifiers();
+        //beginInsertRows(annotationObjectIndex, 0, qualifiers.size() - 1);
+        //foreach(const U2Qualifier& qualifier, qualifiers) {
+        //    QVariantList qualifierData = getQualifierData(qualifier);
+        //    AssemblyAnnotationsTreeItem* qualifierItem = new AssemblyAnnotationsTreeItem(qualifierData, annObjItem);
+        //    annObjItem->addChild(qualifierItem);
+        //}
+        //endInsertRows();
+    }
 
 
+    //foreach(Annotation* ann, annotations) {
+    //    QVariantList annData = getAnnotationData(ann);
+    //    AssemblyAnnotationsTreeItem* annObjItem = new AssemblyAnnotationsTreeItem(annData, parentItem);
+    //    parentItem->addChild(annObjItem);
+    //    addQualifiers(ann->getQualifiers().toList(), annObjItem);
+    //}
+}
 
-    int i = 0;
+void AssemblyAnnotationsTreeViewModel::addQualifiers(const QList<U2Qualifier>& qualifiers,
+                                                     AssemblyAnnotationsTreeItem* parentItem) {
+    CHECK(!qualifiers.isEmpty(), );
+
+    QModelIndex annotationObjectIndex = createIndex(parentItem->getRowNum(), 0, parentItem);
+    beginInsertRows(annotationObjectIndex, 0, qualifiers.size() - 1);
+    foreach(const U2Qualifier& qualifier, qualifiers) {
+        QVariantList qualifierData = getQualifierData(qualifier);
+        AssemblyAnnotationsTreeItem* qualifierItem = new AssemblyAnnotationsTreeItem(qualifierData, parentItem);
+        parentItem->addChild(qualifierItem);
+    }
+    endInsertRows();
+
+
+    //foreach(const U2Qualifier& qualifier, qualifiers) {
+    //    QVariantList qualifierData = getQualifierData(qualifier);
+    //    AssemblyAnnotationsTreeItem* qualifierItem = new AssemblyAnnotationsTreeItem(qualifierData, parentItem);
+    //    parentItem->addChild(qualifierItem);
+    //}
+}
+
+QVariantList AssemblyAnnotationsTreeViewModel::getTableObjData(AnnotationTableObject* obj) const {
+    const QString annTableObjName = obj->getGObjectName();
+    const QString docShortName = obj->getDocument()->getName();
+    QVariantList tableObjData = { annTableObjName + " [" + docShortName + "]", "" };
+
+    return tableObjData;
+}
+
+QVariantList AssemblyAnnotationsTreeViewModel::getAnnotationData(Annotation* ann) const {
+    QString annRegionString;
+    QVector<U2Region> regions = ann->getRegions();
+    if (regions.size() == 1) {
+        annRegionString = regions.first().toString(U2Region::FormatDots);
+    } else {
+        annRegionString = "join(";
+        foreach(const U2Region& region, regions) {
+            annRegionString += region.toString(U2Region::FormatDots) + ",";
+        }
+        annRegionString.remove(annRegionString.size() - 1, 1);
+        annRegionString += ")";
+    }
+    annRegionString.remove(" ");
+    QVariantList annData = { ann->getName(), annRegionString };
+
+    return annData;
+}
+
+QVariantList AssemblyAnnotationsTreeViewModel::getQualifierData(const U2Qualifier& qualifier) const {
+    QVariantList qualifierData = { qualifier.name, qualifier.value };
+
+    return qualifierData;
 }
 
 }
