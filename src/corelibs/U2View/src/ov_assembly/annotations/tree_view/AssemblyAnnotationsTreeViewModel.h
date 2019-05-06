@@ -31,7 +31,6 @@ namespace U2 {
 class Annotation;
 class AnnotationTableObject;
 class AssemblyAnnotationsTreeItem;
-class SequenceObjectContext;
 class U2Qualifier;
 
 class AssemblyAnnotationsTreeViewModel : public QAbstractItemModel {
@@ -55,17 +54,11 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    //bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
-
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-
 private slots:
     void sl_annotationObjectAdded(AnnotationTableObject* obj);
     void sl_annotationObjectRemoved(AnnotationTableObject* obj);
-    void sl_contextChanged(SequenceObjectContext* ctx);
 
 private:
-    void updateTreeView();
     void addAnnotationTableObject(AnnotationTableObject *newObj);
     void addAnnotations(const QList<Annotation*>& annotations, AssemblyAnnotationsTreeItem* parentItem);
     void addQualifiers(const QList<U2Qualifier>& qualifiers, AssemblyAnnotationsTreeItem* parentItem);
@@ -74,7 +67,6 @@ private:
     QVariantList getQualifierData(const U2Qualifier& qualifier) const;
 
     AssemblyAnnotationsTreeItem* rootItem;
-    SequenceObjectContext* ctx;
     QList<AnnotationTableObject*> annTableObjects;
 };
 
