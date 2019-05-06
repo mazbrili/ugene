@@ -245,7 +245,7 @@ QMap<QString, QList<SharedAnnotationData> > GTFFormat::parseDocument(IOAdapter *
     CHECK_OP(os, result);
 
     if (!fileIsValid) {
-        ioLog.error("GTF parsing error: one or more errors occurred while parsing the input file, see TRACE and INFO log for details!");
+        ioLog.info(QString("The %1 file GTF format is not strict - some annotations do not have 'gene_id' and/or 'transcript_id' qualifiers.").arg(io->getURL().getURLString()));
     }
 
     return result;
@@ -537,7 +537,7 @@ void GTFFormat::storeDocument(Document *doc, IOAdapter *io, U2OpStatus &os) {
     }
 
     QByteArray lineData;
-    bool geneIdOrTranscriptIdQalNotFound = false;
+    bool geneIdOrTranscriptIdQualNotFound = false;
 
     foreach (GObject* annotTable, annotTables) {
         AnnotationTableObject *annTable = qobject_cast<AnnotationTableObject *>(annotTable);
@@ -605,8 +605,8 @@ void GTFFormat::storeDocument(Document *doc, IOAdapter *io, U2OpStatus &os) {
                         }
                     }
                 }
-                if (!geneIdOrTranscriptIdQalNotFound && (geneIdAttributeStr.isEmpty() || transcriptIdAttributeStr.isEmpty())) {
-                    geneIdOrTranscriptIdQalNotFound = true;
+                if (!geneIdOrTranscriptIdQualNotFound && (geneIdAttributeStr.isEmpty() || transcriptIdAttributeStr.isEmpty())) {
+                    geneIdOrTranscriptIdQualNotFound = true;
                 }
                 lineFields[GTF_ATTRIBUTES_INDEX] = geneIdAttributeStr +
                     transcriptIdAttributeStr +
@@ -621,8 +621,8 @@ void GTFFormat::storeDocument(Document *doc, IOAdapter *io, U2OpStatus &os) {
             }
         }
     }
-    if (geneIdOrTranscriptIdQalNotFound) {
-        ioLog.info(QString("The %1 file GTF format is not strict - some annotations do not have 'gene_id' and/or 'transcript_id' qualifiers.").arg(io->getURL().getURLString()));
+    if (geneIdOrTranscriptIdQualNotFound) {
+        ioLog.info(QString("The '%1' file GTF format is not strict - some annotations do not have \"gene_id\" and/or \"transcript_id\" qualifiers.").arg(io->getURL().getURLString()));
     }
 }
 
