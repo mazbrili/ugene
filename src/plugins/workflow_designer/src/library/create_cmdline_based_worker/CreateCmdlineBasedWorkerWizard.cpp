@@ -495,21 +495,38 @@ bool CreateCmdlineBasedWorkerWizardCommandTemplatePage::validatePage() {
                         field(CreateCmdlineBasedWorkerWizard::OUTPUTS_NAMES_FIELD).toStringList() +
                         field(CreateCmdlineBasedWorkerWizard::ATTRIBUTES_NAMES_FIELD).toStringList();
 
-    foreach (const QString &name, names) {
+    QStringList parameters;
+    foreach(const QString &name, names) {
         if (!commandTemplate.contains("$" + name)) {
-            QObjectScopedPointer<QMessageBox> msgBox = new QMessageBox(this);
-            msgBox->setWindowTitle(tr("Create Element"));
-            msgBox->setText(tr("You don't use parameter %1 in template string. Continue?").arg(name));
-            msgBox->addButton(tr("Continue"), QMessageBox::ActionRole);
-            QPushButton *cancel = msgBox->addButton(tr("Abort"), QMessageBox::ActionRole);
-            msgBox->exec();
-            CHECK(!msgBox.isNull(), false);
-            if (msgBox->clickedButton() == cancel) {
-                return false;
-            }
+            parameters.append(name);
         }
     }
 
+    QObjectScopedPointer<QMessageBox> msgBox = new QMessageBox(this);
+    msgBox->setWindowTitle(tr("Create Element"));
+    msgBox->setText(tr("You don't use listed parameters in template string. Continue?"));
+    msgBox->addButton(tr("Continue"), QMessageBox::ActionRole);
+    QPushButton *cancel = msgBox->addButton(tr("Abort"), QMessageBox::ActionRole);
+    msgBox->exec();
+    CHECK(!msgBox.isNull(), false);
+    if (msgBox->clickedButton() == cancel) {
+        return false;
+    }
+
+    /*
+    QObjectScopedPointer<QMessageBox> questionBox = new QMessageBox;
+    questionBox->setIcon(QMessageBox::Question);
+    questionBox->setWindowTitle(QObject::tr("Removing Dashboards"));
+    questionBox->setText(warningMessageText);
+    if (tooManyDashboardsSelected) {
+        questionBox->setDetailedText(fullDashboardNamesList);
+    }
+    QPushButton *confirmButton = questionBox->addButton(tr("Confirm"), QMessageBox::ApplyRole);
+    const QPushButton *cancelButton = questionBox->addButton(tr("Cancel"),
+        QMessageBox::RejectRole);
+    questionBox->setDefaultButton(confirmButton);
+    questionBox->exec();
+    */
     return true;
 }
 
