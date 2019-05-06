@@ -19,6 +19,7 @@
  * MA 02110-1301, USA.
  */
 
+#include <U2Core/AnnotationSelection.h>
 #include <U2Core/DocumentModel.h>
 #include <U2Core/U1AnnotationUtils.h>
 #include <U2Core/U2Qualifier.h>
@@ -97,6 +98,15 @@ int AssemblyAnnotationsTreeViewModel::columnCount(const QModelIndex &index) cons
     return indexItem->columnCount();
 }
 
+void AssemblyAnnotationsTreeViewModel::changeSelection(const QModelIndexList& selected, const QModelIndexList& deselected) const {
+    changeSelection(selected, Mode::Select);
+    changeSelection(deselected, Mode::Deselect);
+}
+
+QModelIndex AssemblyAnnotationsTreeViewModel::getAnnotationModelIndex(Annotation* annotation) {
+    return indexAnnotationMap.key(annotation);
+}
+
 void AssemblyAnnotationsTreeViewModel::sl_annotationObjectAdded(AnnotationTableObject *obj) {
     addAnnotationTableObject(obj);
 }
@@ -135,6 +145,7 @@ void AssemblyAnnotationsTreeViewModel::addAnnotations(const QList<Annotation*>& 
     foreach(Annotation* ann, annotations) {
         QVariantList annData = getAnnotationData(ann);
         AssemblyAnnotationsTreeItem* annObjItem = new AssemblyAnnotationsTreeItem(annData, parentItem);
+        indexAnnotationMap.insert(createIndex(annObjItem->getRowNum(), 0, annObjItem), ann);
         annotationItemHash.insert(ann, annObjItem);
     }
     endInsertRows();
@@ -152,7 +163,7 @@ void AssemblyAnnotationsTreeViewModel::addQualifiers(const QList<U2Qualifier>& q
     beginInsertRows(annotationObjectIndex, 0, qualifiers.size() - 1);
     foreach(const U2Qualifier& qualifier, qualifiers) {
         QVariantList qualifierData = getQualifierData(qualifier);
-        AssemblyAnnotationsTreeItem* qualifierItem = new AssemblyAnnotationsTreeItem(qualifierData, parentItem);
+        new AssemblyAnnotationsTreeItem(qualifierData, parentItem);
     }
     endInsertRows();
 }
@@ -185,6 +196,25 @@ void AssemblyAnnotationsTreeViewModel::cleanAnnotationTree() {
 
     foreach(AnnotationTableObject *obj, ctx->getAnnotationObjects(true)) {
         sl_annotationObjectRemoved(obj);
+    }
+}
+
+void AssemblyAnnotationsTreeViewModel::changeSelection(const QModelIndexList& items, const Mode mode) const {
+    foreach(const QModelIndex& index, items) {
+        Annotation* annotation = indexAnnotationMap.value(index, nullptr);
+        CHECK_CONTINUE(nullptr != annotation);
+
+        AnnotationSelection* as = ctx->getAnnotationsSelection();
+        switch (mode) {
+        case Mode::Select:
+            as->addToSelection(annotation);
+            break;
+        case Mode::Deselect:
+            as->removeFromSelection(annotation);
+            break;
+        default:
+            FAIL("Unexpected selection mode", );
+        }
     }
 }
 

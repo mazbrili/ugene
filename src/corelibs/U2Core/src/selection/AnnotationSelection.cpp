@@ -137,6 +137,14 @@ const QList<AnnotationSelectionData> & AnnotationSelection::getSelection() const
     return selection;
 }
 
+const QList<Annotation*> AnnotationSelection::getSelectedAnnotations() const {
+    QList<Annotation*> result;
+    foreach(const AnnotationSelectionData& selectionData, selection) {
+        result << selectionData.annotation;
+    }
+    return result;
+}
+
 bool AnnotationSelection::isEmpty() const {
     return selection.isEmpty();
 }

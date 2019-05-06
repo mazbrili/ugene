@@ -189,14 +189,16 @@ QList<AnnotationSelectionData> GSequenceLineViewAnnotated::selectAnnotationByCoo
     U2Region reg(pos - dPos, 1 + 2 * dPos);
     const QSet<AnnotationTableObject *> aObjs = ctx->getAnnotationObjects(true);
     foreach (AnnotationTableObject *ao, aObjs) {
-        foreach (Annotation *a, ao->getAnnotationsByRegion(reg)) {
+        QList<Annotation *> annByReg = ao->getAnnotationsByRegion(reg);
+        foreach(Annotation *a, annByReg) {
             const SharedAnnotationData &aData = a->getData();
             const QVector<U2Region> location = aData->getRegions();
             for (int i = 0, n = location.size(); i < n; i++) {
                 const U2Region &l = location[i];
                 if (l.intersects(reg) || l.endPos() == reg.startPos) {
                     bool ok = true;
-                    if (l.endPos() == pos || pos == l.startPos) { //now check pixel precise coords for boundaries
+                    qint64 ep = l.endPos();
+                    if (ep == pos || pos == l.startPos) { //now check pixel precise coords for boundaries
                         int x1 = ra->posToCoord(l.startPos, true);
                         int x2 = ra->posToCoord(l.endPos(), true);
                         ok = p.x() <= x2 && p.x() >= x1;
@@ -228,9 +230,7 @@ void GSequenceLineViewAnnotated::mousePressEvent(QMouseEvent *me) {
         QList<AnnotationSelectionData> selected = selectAnnotationByCoord(p);
         annotationEvent = !selected.isEmpty();
         if ((!controlOrShiftPressed || !annotationEvent) && cursor().shape() == Qt::ArrowCursor) {
-            ctx->getAnnotationsSelection()->clear();
-            ctx->getSequenceSelection()->clear();
-            ctx->emitClearSelectedAnnotationRegions();
+            clearAllSelections();
         }
         if (annotationEvent && cursor().shape() == Qt::ArrowCursor) {
             AnnotationSelectionData *asd = &selected.first();
@@ -380,6 +380,12 @@ void GSequenceLineViewAnnotated::ensureVisible(Annotation *a, int locationIdx) {
         const qint64 pos = a->getStrand().isCompementary() ? region.endPos() : region.startPos;
         setCenterPos(qBound(qint64(0), pos, seqLen - 1));
     }
+}
+
+void GSequenceLineViewAnnotated::clearAllSelections() const {
+    ctx->getAnnotationsSelection()->clear();
+    ctx->getSequenceSelection()->clear();
+    ctx->emitClearSelectedAnnotationRegions();
 }
 
 bool GSequenceLineViewAnnotated::event(QEvent *e) {

@@ -75,6 +75,7 @@
 #include <U2View/SequenceObjectContext.h>
 
 #include "annotations/AssemblyAnnotationsArea.h"
+#include "annotations/tree_view/AssemblyAnnotationsTreeView.h"
 #include "annotations/tree_view/AssemblyAnnotationsTreeViewModel.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyBrowserFactory.h"
@@ -1093,8 +1094,11 @@ void AssemblyBrowser::addAnnotationTableObjectToView(AnnotationTableObject* annT
 void AssemblyBrowser::connectContextWithAnnotationTreeModel(SequenceObjectContext* ctx) {
     CHECK(nullptr != ui, );
 
-    QTreeView* annTreeView = ui->getAnnotationsTreeView();
+    AssemblyAnnotationsTreeView* annTreeView = ui->getAnnotationsTreeView();
     SAFE_POINT(nullptr != annTreeView, "Assembly Annotation Tree View is missed", );
+
+    connect(ctx, SIGNAL(si_annotationSelection(AnnotationSelectionData*)),
+            annTreeView, SLOT(sl_annotationSelection(AnnotationSelectionData*)));
 
     QAbstractItemModel* annTreeViewModel = annTreeView->model();
     SAFE_POINT(nullptr != annTreeViewModel, "Assembly Annotation Tree View Model is missed", );
@@ -1189,7 +1193,7 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         readsArea  = new AssemblyReadsArea(this, readsHBar, readsVBar);
         variantsArea = new AssemblyVariantsArea(this);
         annotationsArea = new AssemblyAnnotationsArea(this);
-        annotationsTreeView = new QTreeView(this);
+        annotationsTreeView = new AssemblyAnnotationsTreeView(this);
         AssemblyAnnotationsTreeViewModel* annotationsTreeViewModel = new AssemblyAnnotationsTreeViewModel(this);
         annotationsTreeView->setModel(annotationsTreeViewModel);
 
@@ -1260,6 +1264,8 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         connect(browser->getModel().data(), SIGNAL(si_referenceChanged()), consensusArea, SLOT(sl_redraw()));
         connect(zoomableOverview, SIGNAL(si_coverageReady()), readsArea, SLOT(sl_redraw()));
         connect(referenceArea, SIGNAL(si_unassociateReference()), browser, SLOT(sl_unassociateReference()));
+        connect(browser->getModel().data(), SIGNAL(si_contextChanged(SequenceObjectContext*)),
+                annotationsTreeViewModel, SLOT(sl_contextChanged(SequenceObjectContext*)));
     }
     // do not how to show them
     else {

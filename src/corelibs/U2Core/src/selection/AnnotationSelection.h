@@ -75,6 +75,8 @@ public:
 
     const QList<AnnotationSelectionData> &  getSelection() const;
 
+    const QList<Annotation*>                getSelectedAnnotations() const;
+
     const AnnotationSelectionData *         getAnnotationData(Annotation *a) const;
     /**
      * Adds annotation to selection.

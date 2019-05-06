@@ -19,9 +19,14 @@
  * MA 02110-1301, USA.
  */
 
+#include <QApplication>
+
 #include <U2Core/Counter.h>
+#include <U2Core/U2SafePoints.h>
 
 #include <U2Gui/GScrollBar.h>
+
+#include <U2View/SequenceObjectContext.h>
 
 #include "../AssemblyBrowser.h"
 #include "AssemblyAnnotationsArea.h"
@@ -51,9 +56,36 @@ AssemblyAnnotationsAreaWidget::AssemblyAnnotationsAreaWidget
     update();
 }
 
+void AssemblyAnnotationsAreaWidget::mouseDoubleClickEvent(QMouseEvent* me) {
+    mousePressEvent(me);
+}
+
 void AssemblyAnnotationsAreaWidget::mouseMoveEvent(QMouseEvent *e) {
     emit si_mouseMovedToPos(e->pos());
+    isSelectionResizing = false;
     PanView::mouseMoveEvent(e);
+}
+
+void AssemblyAnnotationsAreaWidget::keyPressEvent(QKeyEvent *e) {
+    int key = e->key();
+    bool accepted = false;
+    switch (key) {
+    case Qt::Key_Escape:
+        GSequenceLineViewAnnotated::clearAllSelections();
+        accepted = true;
+        break;
+    }
+
+    if (accepted) {
+        e->accept();
+    } else {
+        PanView::keyPressEvent(e);
+    }
+}
+
+
+void AssemblyAnnotationsAreaWidget::clearAllSelections() const {
+    //do nothing
 }
 
 int AssemblyAnnotationsAreaWidget::getHorizontalScrollBarPosition() const {
@@ -70,11 +102,40 @@ void AssemblyAnnotationsAreaWidget::sl_offsetsChanged() {
     update();
 }
 
+void AssemblyAnnotationsAreaWidget::sl_annotationSelection(AnnotationSelectionData* asd) {
+    const Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+    const bool controlOrShiftPressed = modifiers.testFlag(Qt::ControlModifier)
+        || modifiers.testFlag(Qt::ShiftModifier);
+    Annotation* clickedAnnotations = asd->annotation;
+    AnnotationSelection* as = ctx->getAnnotationsSelection();
+    const QList<Annotation*> selectedAnnotations = as->getSelectedAnnotations();
+    if (!selectedAnnotations.contains(clickedAnnotations)) {
+        as->addToSelection(clickedAnnotations);
+        if (!controlOrShiftPressed) {
+            foreach(Annotation* ann, selectedAnnotations) {
+                as->removeFromSelection(ann);
+            }
+        }
+    } else {
+        if (controlOrShiftPressed) {
+            as->removeFromSelection(clickedAnnotations);
+        } else{
+            foreach(Annotation* ann, selectedAnnotations) {
+                CHECK_CONTINUE(clickedAnnotations != ann);
+
+                as->removeFromSelection(ann);
+            }
+        }
+    }
+}
+
 void AssemblyAnnotationsAreaWidget::connectSlots() const {
     connect(this, SIGNAL(si_mouseMovedToPos(const QPoint &)),
             browserUi->getAnnotationsArea(), SIGNAL(si_mouseMovedToPos(const QPoint &)));
     connect(browser, SIGNAL(si_zoomOperationPerformed()), SLOT(sl_zoomPerformed()));
     connect(browser, SIGNAL(si_offsetsChanged()), SLOT(sl_offsetsChanged()));
+    connect(ctx, SIGNAL(si_annotationSelection(AnnotationSelectionData*)),
+            SLOT(sl_annotationSelection(AnnotationSelectionData*)));
 }
 
 void AssemblyAnnotationsAreaWidget::updateVisibleRange() {

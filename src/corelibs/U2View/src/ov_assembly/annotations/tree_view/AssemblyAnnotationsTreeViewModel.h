@@ -23,12 +23,14 @@
 #define _U2_ASSEMBLY_ANNOTATIONS_TREE_VIEW_MODEL_H_
 
 #include <QAbstractItemModel>
+#include <QMap>
 #include <QModelIndex>
 #include <QVariant>
 
 namespace U2 {
 
 class Annotation;
+class AnnotationSelectionData;
 class AnnotationTableObject;
 class AssemblyAnnotationsTreeItem;
 class SequenceObjectContext;
@@ -42,12 +44,13 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &child) const override;
-
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    void changeSelection(const QModelIndexList& selected, const QModelIndexList& deselected) const;
+    QModelIndex getAnnotationModelIndex(Annotation* annotation);
 
 private slots:
     void sl_annotationObjectAdded(AnnotationTableObject* obj);
@@ -55,16 +58,24 @@ private slots:
     void sl_contextChanged(SequenceObjectContext* ctx);
 
 private:
+    enum class Mode {
+        Select,
+        Deselect
+    };
+
     void addAnnotationTableObject(AnnotationTableObject *newObj);
     void addAnnotations(const QList<Annotation*>& annotations, AssemblyAnnotationsTreeItem* parentItem);
     void addQualifiers(const QList<U2Qualifier>& qualifiers, AssemblyAnnotationsTreeItem* parentItem);
     QVariantList getTableObjData(AnnotationTableObject* obj) const;
     QVariantList getAnnotationData(Annotation* ann) const;
     QVariantList getQualifierData(const U2Qualifier& qualifier) const;
+
     void cleanAnnotationTree();
+    void changeSelection(const QModelIndexList& items, const Mode mode) const;
 
     AssemblyAnnotationsTreeItem* rootItem;
     SequenceObjectContext* ctx;
+    QMap<QModelIndex, Annotation*> indexAnnotationMap;
 };
 
 }
