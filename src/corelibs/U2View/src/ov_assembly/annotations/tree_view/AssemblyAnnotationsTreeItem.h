@@ -34,6 +34,7 @@ public:
 
     void addChild(AssemblyAnnotationsTreeItem* child);
     AssemblyAnnotationsTreeItem* getChild(const int row) const;
+    AssemblyAnnotationsTreeItem* takeChild(const int row);
     AssemblyAnnotationsTreeItem* getParent() const;
 
     QVariant getData(int column) const;

@@ -40,6 +40,10 @@ AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::getChild(const int row
     return children.value(row);
 }
 
+AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::takeChild(const int row) {
+    return children.takeAt(row);
+}
+
 AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::getParent() const {
     return parent;
 }

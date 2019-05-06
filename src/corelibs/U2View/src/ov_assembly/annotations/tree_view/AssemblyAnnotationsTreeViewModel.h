@@ -31,6 +31,7 @@ namespace U2 {
 class Annotation;
 class AnnotationTableObject;
 class AssemblyAnnotationsTreeItem;
+class SequenceObjectContext;
 class U2Qualifier;
 
 class AssemblyAnnotationsTreeViewModel : public QAbstractItemModel {
@@ -57,6 +58,7 @@ public:
 private slots:
     void sl_annotationObjectAdded(AnnotationTableObject* obj);
     void sl_annotationObjectRemoved(AnnotationTableObject* obj);
+    void sl_contextChanged(SequenceObjectContext* ctx);
 
 private:
     void addAnnotationTableObject(AnnotationTableObject *newObj);
@@ -67,7 +69,7 @@ private:
     QVariantList getQualifierData(const U2Qualifier& qualifier) const;
 
     AssemblyAnnotationsTreeItem* rootItem;
-    QList<AnnotationTableObject*> annTableObjects;
+    SequenceObjectContext* ctx;
 };
 
 }

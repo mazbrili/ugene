@@ -1260,6 +1260,8 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         connect(browser->getModel().data(), SIGNAL(si_referenceChanged()), consensusArea, SLOT(sl_redraw()));
         connect(zoomableOverview, SIGNAL(si_coverageReady()), readsArea, SLOT(sl_redraw()));
         connect(referenceArea, SIGNAL(si_unassociateReference()), browser, SLOT(sl_unassociateReference()));
+        connect(browser->getModel().data(), SIGNAL(si_contextChanged(SequenceObjectContext*)),
+                annotationsTreeViewModel, SLOT(sl_contextChanged(SequenceObjectContext*)));
     }
     // do not how to show them
     else {

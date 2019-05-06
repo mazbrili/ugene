@@ -19,17 +19,19 @@
  * MA 02110-1301, USA.
  */
 
-#include <U2Core/AnnotationTableObject.h>
 #include <U2Core/DocumentModel.h>
 #include <U2Core/U2Qualifier.h>
 #include <U2Core/U2SafePoints.h>
+
+#include <U2View/SequenceObjectContext.h>
 
 #include "AssemblyAnnotationsTreeItem.h"
 #include "AssemblyAnnotationsTreeViewModel.h"
 
 namespace U2 {
 
-AssemblyAnnotationsTreeViewModel::AssemblyAnnotationsTreeViewModel(QObject *parent) : QAbstractItemModel(parent) {
+AssemblyAnnotationsTreeViewModel::AssemblyAnnotationsTreeViewModel(QObject *parent) : QAbstractItemModel(parent),
+                                                                                      ctx(nullptr) {
     QVariantList rootData = { tr("Name"), tr("Value") };
     rootItem = new AssemblyAnnotationsTreeItem(rootData);
 }
@@ -90,18 +92,17 @@ void AssemblyAnnotationsTreeViewModel::sl_annotationObjectAdded(AnnotationTableO
 }
 
 void AssemblyAnnotationsTreeViewModel::sl_annotationObjectRemoved(AnnotationTableObject *obj) {
-    AssemblyAnnotationsTreeItem* item = rootItem->getChild(annTableObjects.indexOf(obj));
+    AssemblyAnnotationsTreeItem* item = rootItem->takeChild(ctx->getAnnotationObjects().toList().indexOf(obj));
     CHECK(nullptr != item, );
 
     delete item;
-    annTableObjects.removeOne(obj);
+}
+
+void AssemblyAnnotationsTreeViewModel::sl_contextChanged(SequenceObjectContext* _ctx) {
+    ctx = _ctx;
 }
 
 void AssemblyAnnotationsTreeViewModel::addAnnotationTableObject(AnnotationTableObject* newObj) {
-    CHECK(!annTableObjects.contains(newObj), );
-
-    annTableObjects << newObj;
-
     beginInsertRows(QModelIndex(), 0, 0);
 
     QVariantList tableObjData = getTableObjData(newObj);
