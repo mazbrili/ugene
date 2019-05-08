@@ -19,17 +19,11 @@
  * MA 02110-1301, USA.
  */
 
-#include <U2Core/AppContext.h>
-#include <U2Core/DNAAlphabet.h>
-#include <U2Core/DNASequence.h>
-#include <U2Core/DNASequenceObject.h>
 #include <U2Core/DNATranslation.h>
 #include <U2Core/FailTask.h>
-#include <U2Core/GObjectReference.h>
 #include <U2Core/L10n.h>
 #include <U2Core/Log.h>
 #include <U2Core/U2OpStatusUtils.h>
-#include <U2Core/U2SafePoints.h>
 
 #include <U2Designer/DelegateEditors.h>
 
@@ -38,11 +32,8 @@
 #include <U2Lang/BasePorts.h>
 #include <U2Lang/BaseSlots.h>
 #include <U2Lang/BaseTypes.h>
-#include <U2Lang/CoreLibConstants.h>
-#include <U2Lang/IntegralBusModel.h>
 #include <U2Lang/WorkflowEnv.h>
 
-#include "FindRepeatsDialog.h"
 #include "RepeatWorker.h"
 
 namespace U2 {
@@ -66,14 +57,12 @@ static const QString USE_MIN_DISTANCE_ATTR("use-mindistance");
 
 const QString RepeatWorkerFactory::ACTOR_ID("repeats-search");
 
-FindRepeatsTaskSettings defaultSettings() {
+FindRepeatsTaskSettings RepeatWorkerFactory::defaultSettings() {
     FindRepeatsTaskSettings res;
     res.minLen = 5;
     res.setIdentity(100);
-    bool minDistCheck = true;
-    bool maxDistCheck = true;
     res.minDist = 0;
-    res.maxDist = 0;
+    res.maxDist = 5000;
     res.inverted = false;
     res.excludeTandems = false;
     res.filter = DisjointRepeats;
@@ -110,39 +99,30 @@ void RepeatWorkerFactory::init() {
         Descriptor umaxd(USE_MAX_DISTANCE_ATTR, RepeatWorker::tr("Apply 'Max distance' attribute"), RepeatWorker::tr("Apply 'Max distance' attribute."));
         Descriptor umind(USE_MIN_DISTANCE_ATTR, RepeatWorker::tr("Apply 'Min distance' attribute"), RepeatWorker::tr("Apply 'Min distance' attribute."));
 
-      FindRepeatsTaskSettings cfg = defaultSettings();
+        FindRepeatsTaskSettings cfg = RepeatWorkerFactory::defaultSettings();
         Attribute *aa;
         a << new Attribute(nd, BaseTypes::STRING_TYPE(), true, "repeat_unit");
-        aa = new Attribute(ld, BaseTypes::NUM_TYPE(), false);
-        aa->setAttributeValue(cfg.minLen);
+        aa = new Attribute(ld, BaseTypes::NUM_TYPE(), false, cfg.minLen);
         a << aa;
-        aa = new Attribute(idd, BaseTypes::NUM_TYPE(), false);
-        aa->setAttributeValue(cfg.getIdentity());
+        aa = new Attribute(idd, BaseTypes::NUM_TYPE(), false, cfg.getIdentity());
         a << aa;
         a << new Attribute(umind, BaseTypes::BOOL_TYPE(), false, true);
-        aa = new Attribute(mid, BaseTypes::NUM_TYPE(), false);
-        aa->setAttributeValue(cfg.minDist);
+        aa = new Attribute(mid, BaseTypes::NUM_TYPE(), false, cfg.minDist);
         aa->addRelation(new VisibilityRelation(USE_MIN_DISTANCE_ATTR, true));
         a << aa;
         a << new Attribute(umaxd, BaseTypes::BOOL_TYPE(), false, true);
-        aa = new Attribute(mad, BaseTypes::NUM_TYPE(), false);
-        aa->setAttributeValue(cfg.maxDist);
+        aa = new Attribute(mad, BaseTypes::NUM_TYPE(), false, cfg.maxDist);
         aa->addRelation(new VisibilityRelation(USE_MAX_DISTANCE_ATTR, true));
         a << aa;
-        aa = new Attribute(ind, BaseTypes::BOOL_TYPE(), false);
-        aa->setAttributeValue(cfg.inverted);
+        aa = new Attribute(ind, BaseTypes::BOOL_TYPE(), false, cfg.inverted);
         a << aa;
-        aa = new Attribute(nsd, BaseTypes::NUM_TYPE(), false);
-        aa->setAttributeValue(cfg.filter);
+        aa = new Attribute(nsd, BaseTypes::NUM_TYPE(), false, cfg.filter);
         a << aa;
-        aa = new Attribute(ald, BaseTypes::NUM_TYPE(), false);
-        aa->setAttributeValue(cfg.algo);
+        aa = new Attribute(ald, BaseTypes::NUM_TYPE(), false, cfg.algo);
         a << aa;
-        aa = new Attribute(thd, BaseTypes::NUM_TYPE(), false);
-        aa->setAttributeValue(cfg.nThreads);
+        aa = new Attribute(thd, BaseTypes::NUM_TYPE(), false, cfg.nThreads);
         a << aa;
-        aa = new Attribute(tan, BaseTypes::BOOL_TYPE(), false);
-        aa->setAttributeValue(cfg.excludeTandems);
+        aa = new Attribute(tan, BaseTypes::BOOL_TYPE(), false, cfg.excludeTandems);
         a << aa;
     }
 
