@@ -37,12 +37,6 @@ class U2Qualifier;
 class AssemblyAnnotationsTreeViewModel : public QAbstractItemModel {
     Q_OBJECT
 public:
-    enum class Type {
-        TableObject,
-        Annotation,
-        Qualifier
-    };
-
     AssemblyAnnotationsTreeViewModel(QObject *parent);
     ~AssemblyAnnotationsTreeViewModel();
 
@@ -67,6 +61,7 @@ private:
     QVariantList getTableObjData(AnnotationTableObject* obj) const;
     QVariantList getAnnotationData(Annotation* ann) const;
     QVariantList getQualifierData(const U2Qualifier& qualifier) const;
+    void cleanAnnotationTree();
 
     AssemblyAnnotationsTreeItem* rootItem;
     SequenceObjectContext* ctx;

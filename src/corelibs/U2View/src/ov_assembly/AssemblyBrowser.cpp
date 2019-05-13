@@ -140,8 +140,8 @@ void AssemblyBrowser::sl_referenceChanged() {
     U2SequenceObject *so = model->getRefObj();
     if (so != nullptr) {
         SequenceObjectContext* seqCtx = new SequenceObjectContext(so, nullptr);
-        connectContextWithAnnotationTreeModel(seqCtx);
         model->setSequenceObjectContext(seqCtx);
+        connectContextWithAnnotationTreeModel(seqCtx);
         addObjectToView(so);
     }
     setReferenceAction->setEnabled(!model->isLoadingReference());
@@ -1193,11 +1193,11 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         AssemblyAnnotationsTreeViewModel* annotationsTreeViewModel = new AssemblyAnnotationsTreeViewModel(this);
         annotationsTreeView->setModel(annotationsTreeViewModel);
 
-        QVBoxLayout *mainHorizontalLayout = new QVBoxLayout();
-        mainHorizontalLayout->setMargin(0);
-        mainHorizontalLayout->setSpacing(2);
-        mainHorizontalLayout->addWidget(zoomableOverview);
-        mainHorizontalLayout->addWidget(annotationsArea);
+        QVBoxLayout *mainVerticalLayout = new QVBoxLayout();
+        mainVerticalLayout->setMargin(0);
+        mainVerticalLayout->setSpacing(2);
+        mainVerticalLayout->addWidget(zoomableOverview);
+        mainVerticalLayout->addWidget(annotationsArea);
 
         QGridLayout * readsLayout = new QGridLayout();
         readsLayout->setMargin(0);
@@ -1215,11 +1215,11 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
 
         QWidget * readsLayoutWidget = new QWidget;
         readsLayoutWidget->setLayout(readsLayout);
-        mainHorizontalLayout->addWidget(readsLayoutWidget);
-        mainHorizontalLayout->addWidget(readsHBar);
+        mainVerticalLayout->addWidget(readsLayoutWidget);
+        mainVerticalLayout->addWidget(readsHBar);
 
         QWidget* mainLayoutContainer = new QWidget(this);
-        mainLayoutContainer->setLayout(mainHorizontalLayout);
+        mainLayoutContainer->setLayout(mainVerticalLayout);
 
         QSplitter* assemblySplitter = new QSplitter(this);
         assemblySplitter->addWidget(annotationsTreeView);
@@ -1260,8 +1260,6 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         connect(browser->getModel().data(), SIGNAL(si_referenceChanged()), consensusArea, SLOT(sl_redraw()));
         connect(zoomableOverview, SIGNAL(si_coverageReady()), readsArea, SLOT(sl_redraw()));
         connect(referenceArea, SIGNAL(si_unassociateReference()), browser, SLOT(sl_unassociateReference()));
-        connect(browser->getModel().data(), SIGNAL(si_contextChanged(SequenceObjectContext*)),
-                annotationsTreeViewModel, SLOT(sl_contextChanged(SequenceObjectContext*)));
     }
     // do not how to show them
     else {

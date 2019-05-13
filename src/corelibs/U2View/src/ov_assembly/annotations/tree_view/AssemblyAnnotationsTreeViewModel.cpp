@@ -20,6 +20,7 @@
  */
 
 #include <U2Core/DocumentModel.h>
+#include <U2Core/U1AnnotationUtils.h>
 #include <U2Core/U2Qualifier.h>
 #include <U2Core/U2SafePoints.h>
 
@@ -45,6 +46,7 @@ QModelIndex AssemblyAnnotationsTreeViewModel::index(int row, int column, const Q
 
     AssemblyAnnotationsTreeItem* parentItem = !index.isValid() ? rootItem
                             : static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    SAFE_POINT(nullptr != parentItem, "Unexpected nullptr", QModelIndex());
 
     AssemblyAnnotationsTreeItem* childItem = parentItem->getChild(row);
     CHECK(nullptr != childItem, QModelIndex());
@@ -56,6 +58,8 @@ QModelIndex AssemblyAnnotationsTreeViewModel::parent(const QModelIndex &index) c
     CHECK(index.isValid(), QModelIndex());
 
     AssemblyAnnotationsTreeItem *item = static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    SAFE_POINT(nullptr != item, "Unexpected nullptr", QModelIndex());
+
     AssemblyAnnotationsTreeItem *parentItem = item->getParent();
     CHECK(nullptr != parentItem, QModelIndex());
 
@@ -78,12 +82,16 @@ QVariant AssemblyAnnotationsTreeViewModel::data(const QModelIndex &index, int ro
 int AssemblyAnnotationsTreeViewModel::rowCount(const QModelIndex &index) const {
     AssemblyAnnotationsTreeItem *indexItem = !index.isValid() ? rootItem
                         : static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    SAFE_POINT(nullptr != indexItem, "Unexpected nullptr", 0);
+
     return indexItem->childrenCount();
 }
 
 int AssemblyAnnotationsTreeViewModel::columnCount(const QModelIndex &index) const {
     AssemblyAnnotationsTreeItem *indexItem = !index.isValid() ? rootItem
                         : static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    SAFE_POINT(nullptr != indexItem, "Unexpected nullptr", 0);
+
     return indexItem->columnCount();
 }
 
@@ -92,6 +100,8 @@ void AssemblyAnnotationsTreeViewModel::sl_annotationObjectAdded(AnnotationTableO
 }
 
 void AssemblyAnnotationsTreeViewModel::sl_annotationObjectRemoved(AnnotationTableObject *obj) {
+    //Do you guarantee that the order of tables in the context is the same as in the tree view model?
+    //If not, then search the item in the model by the pointer. It won't take too much time, there won't be many tables. Otherwise add a SAFE_POINT that the found index is not out of boundaries
     AssemblyAnnotationsTreeItem* item = rootItem->takeChild(ctx->getAnnotationObjects().toList().indexOf(obj));
     CHECK(nullptr != item, );
 
@@ -99,11 +109,13 @@ void AssemblyAnnotationsTreeViewModel::sl_annotationObjectRemoved(AnnotationTabl
 }
 
 void AssemblyAnnotationsTreeViewModel::sl_contextChanged(SequenceObjectContext* _ctx) {
+    //TODO: UGENE-6456
+    //cleanAnnotationTree();
     ctx = _ctx;
 }
 
 void AssemblyAnnotationsTreeViewModel::addAnnotationTableObject(AnnotationTableObject* newObj) {
-    beginInsertRows(QModelIndex(), 0, 0);
+    beginInsertRows(QModelIndex(), rootItem->getRowNum(), rootItem->getRowNum());
 
     QVariantList tableObjData = getTableObjData(newObj);
     AssemblyAnnotationsTreeItem* tableObjItem = new AssemblyAnnotationsTreeItem(tableObjData, rootItem);
@@ -117,15 +129,14 @@ void AssemblyAnnotationsTreeViewModel::addAnnotations(const QList<Annotation*>& 
     CHECK(!annotations.isEmpty(), );
 
     QModelIndex tableObjectIndex = createIndex(parentItem->getRowNum(), 0, parentItem);
+    beginInsertRows(tableObjectIndex, 0, annotations.size() - 1);
     foreach(Annotation* ann, annotations) {
-        beginInsertRows(tableObjectIndex, annotations.indexOf(ann), annotations.indexOf(ann));
         QVariantList annData = getAnnotationData(ann);
         AssemblyAnnotationsTreeItem* annObjItem = new AssemblyAnnotationsTreeItem(annData, parentItem);
         parentItem->addChild(annObjItem);
-        endInsertRows();
-
         addQualifiers(ann->getQualifiers().toList(), annObjItem);
     }
+    endInsertRows();
 }
 
 void AssemblyAnnotationsTreeViewModel::addQualifiers(const QList<U2Qualifier>& qualifiers,
@@ -151,19 +162,13 @@ QVariantList AssemblyAnnotationsTreeViewModel::getTableObjData(AnnotationTableOb
 }
 
 QVariantList AssemblyAnnotationsTreeViewModel::getAnnotationData(Annotation* ann) const {
-    QString annRegionString;
     QVector<U2Region> regions = ann->getRegions();
-    if (regions.size() == 1) {
-        annRegionString = regions.first().toString(U2Region::FormatDots);
-    } else {
-        annRegionString = "join(";
-        foreach(const U2Region& region, regions) {
-            annRegionString += region.toString(U2Region::FormatDots) + ",";
-        }
-        annRegionString.remove(annRegionString.size() - 1, 1);
-        annRegionString += ")";
+    QString annRegionString = U1AnnotationUtils::buildLocationString(regions);
+    if (regions.size() > 1) {
+        annRegionString = QString("join(%1)").arg(annRegionString);
+    } else if (ann->getStrand() == U2Strand::Complementary) {
+        annRegionString = QString("complementary(%1)").arg(annRegionString);
     }
-    annRegionString.remove(" ");
     QVariantList annData = { ann->getName(), annRegionString };
 
     return annData;
@@ -173,6 +178,14 @@ QVariantList AssemblyAnnotationsTreeViewModel::getQualifierData(const U2Qualifie
     QVariantList qualifierData = { qualifier.name, qualifier.value };
 
     return qualifierData;
+}
+
+void AssemblyAnnotationsTreeViewModel::cleanAnnotationTree() {
+    CHECK(nullptr != ctx, );
+
+    foreach(AnnotationTableObject *obj, ctx->getAnnotationObjects(true)) {
+        sl_annotationObjectRemoved(obj);
+    }
 }
 
 }
