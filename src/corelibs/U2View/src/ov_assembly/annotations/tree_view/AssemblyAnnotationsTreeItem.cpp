@@ -26,7 +26,11 @@
 namespace U2 {
 
 AssemblyAnnotationsTreeItem::AssemblyAnnotationsTreeItem(const QVariantList _data,
-                    AssemblyAnnotationsTreeItem* _parent) : data(_data), parent(_parent) {}
+                    AssemblyAnnotationsTreeItem* _parent) : data(_data), parent(_parent) {
+    if (nullptr != parent) {
+        parent->addChild(this);
+    }
+}
 
 AssemblyAnnotationsTreeItem::~AssemblyAnnotationsTreeItem() {
     qDeleteAll(children);

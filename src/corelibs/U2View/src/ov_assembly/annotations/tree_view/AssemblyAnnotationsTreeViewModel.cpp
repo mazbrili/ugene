@@ -76,6 +76,8 @@ QVariant AssemblyAnnotationsTreeViewModel::data(const QModelIndex &index, int ro
     CHECK(role == Qt::DisplayRole, QVariant());
 
     AssemblyAnnotationsTreeItem *item = static_cast<AssemblyAnnotationsTreeItem*>(index.internalPointer());
+    SAFE_POINT(nullptr != item, "Unexpected nullptr", QVariant());
+
     return item->getData(index.column());
 }
 
@@ -119,7 +121,6 @@ void AssemblyAnnotationsTreeViewModel::addAnnotationTableObject(AnnotationTableO
 
     QVariantList tableObjData = getTableObjData(newObj);
     AssemblyAnnotationsTreeItem* tableObjItem = new AssemblyAnnotationsTreeItem(tableObjData, rootItem);
-    rootItem->addChild(tableObjItem);
     endInsertRows();
     addAnnotations(newObj->getAnnotations(), tableObjItem);
 }
@@ -129,14 +130,18 @@ void AssemblyAnnotationsTreeViewModel::addAnnotations(const QList<Annotation*>& 
     CHECK(!annotations.isEmpty(), );
 
     QModelIndex tableObjectIndex = createIndex(parentItem->getRowNum(), 0, parentItem);
+    QMap<Annotation*, AssemblyAnnotationsTreeItem*> annotationItemHash;
     beginInsertRows(tableObjectIndex, 0, annotations.size() - 1);
     foreach(Annotation* ann, annotations) {
         QVariantList annData = getAnnotationData(ann);
         AssemblyAnnotationsTreeItem* annObjItem = new AssemblyAnnotationsTreeItem(annData, parentItem);
-        parentItem->addChild(annObjItem);
-        addQualifiers(ann->getQualifiers().toList(), annObjItem);
+        annotationItemHash.insert(ann, annObjItem);
     }
     endInsertRows();
+
+    foreach(Annotation* ann, annotationItemHash.keys()) {
+        addQualifiers(ann->getQualifiers().toList(), annotationItemHash.value(ann));
+    }
 }
 
 void AssemblyAnnotationsTreeViewModel::addQualifiers(const QList<U2Qualifier>& qualifiers,
@@ -148,7 +153,6 @@ void AssemblyAnnotationsTreeViewModel::addQualifiers(const QList<U2Qualifier>& q
     foreach(const U2Qualifier& qualifier, qualifiers) {
         QVariantList qualifierData = getQualifierData(qualifier);
         AssemblyAnnotationsTreeItem* qualifierItem = new AssemblyAnnotationsTreeItem(qualifierData, parentItem);
-        parentItem->addChild(qualifierItem);
     }
     endInsertRows();
 }
@@ -162,13 +166,9 @@ QVariantList AssemblyAnnotationsTreeViewModel::getTableObjData(AnnotationTableOb
 }
 
 QVariantList AssemblyAnnotationsTreeViewModel::getAnnotationData(Annotation* ann) const {
-    QVector<U2Region> regions = ann->getRegions();
-    QString annRegionString = U1AnnotationUtils::buildLocationString(regions);
-    if (regions.size() > 1) {
-        annRegionString = QString("join(%1)").arg(annRegionString);
-    } else if (ann->getStrand() == U2Strand::Complementary) {
-        annRegionString = QString("complementary(%1)").arg(annRegionString);
-    }
+    U2Location location = ann->getLocation();
+    U2LocationData* annLocationData = location.data();
+    QString annRegionString = U1AnnotationUtils::buildLocationString(*annLocationData);
     QVariantList annData = { ann->getName(), annRegionString };
 
     return annData;
