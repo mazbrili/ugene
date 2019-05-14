@@ -32,7 +32,6 @@ public:
     AssemblyAnnotationsTreeItem(const QVariantList data, AssemblyAnnotationsTreeItem* parent = nullptr);
     ~AssemblyAnnotationsTreeItem();
 
-    void addChild(AssemblyAnnotationsTreeItem* child);
     AssemblyAnnotationsTreeItem* getChild(const int row) const;
     AssemblyAnnotationsTreeItem* takeChild(const int row);
     AssemblyAnnotationsTreeItem* getParent() const;

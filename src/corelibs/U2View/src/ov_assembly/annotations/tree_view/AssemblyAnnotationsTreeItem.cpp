@@ -28,18 +28,12 @@ namespace U2 {
 AssemblyAnnotationsTreeItem::AssemblyAnnotationsTreeItem(const QVariantList _data,
                     AssemblyAnnotationsTreeItem* _parent) : data(_data), parent(_parent) {
     if (nullptr != parent) {
-        parent->addChild(this);
+        parent->children.append(this);
     }
 }
 
 AssemblyAnnotationsTreeItem::~AssemblyAnnotationsTreeItem() {
     qDeleteAll(children);
-}
-
-void AssemblyAnnotationsTreeItem::addChild(AssemblyAnnotationsTreeItem* child) {
-    SAFE_POINT(this == child->getParent(), "Unexpected parent", );
-
-    children.append(child);
 }
 
 AssemblyAnnotationsTreeItem* AssemblyAnnotationsTreeItem::getChild(const int row) const {
