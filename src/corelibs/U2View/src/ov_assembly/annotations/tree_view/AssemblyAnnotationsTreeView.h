@@ -41,6 +41,7 @@ protected:
 
 private slots:
     void sl_annotationSelection(AnnotationSelectionData* asd);
+    void sl_clearSelectedAnnotations();
 
 private:
     AssemblyAnnotationsTreeViewModel* getModel() const;

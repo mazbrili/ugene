@@ -1100,6 +1100,9 @@ void AssemblyBrowser::connectContextWithAnnotationTreeModel(SequenceObjectContex
     connect(ctx, SIGNAL(si_annotationSelection(AnnotationSelectionData*)),
             annTreeView, SLOT(sl_annotationSelection(AnnotationSelectionData*)));
 
+    connect(ctx, SIGNAL(si_clearSelectedAnnotationRegions()),
+            annTreeView, SLOT(sl_clearSelectedAnnotations()));
+
     QAbstractItemModel* annTreeViewModel = annTreeView->model();
     SAFE_POINT(nullptr != annTreeViewModel, "Assembly Annotation Tree View Model is missed", );
 

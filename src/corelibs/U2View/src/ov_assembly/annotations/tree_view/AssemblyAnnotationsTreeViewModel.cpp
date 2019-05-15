@@ -27,6 +27,7 @@
 
 #include <U2View/SequenceObjectContext.h>
 
+#include "../AssemblyAnnotationsAreaUtils.h"
 #include "AssemblyAnnotationsTreeItem.h"
 #include "AssemblyAnnotationsTreeViewModel.h"
 
@@ -99,8 +100,8 @@ int AssemblyAnnotationsTreeViewModel::columnCount(const QModelIndex &index) cons
 }
 
 void AssemblyAnnotationsTreeViewModel::changeSelection(const QModelIndexList& selected, const QModelIndexList& deselected) const {
-    changeSelection(selected, Mode::Select);
-    changeSelection(deselected, Mode::Deselect);
+    changeSelection(selected, QItemSelectionModel::Select);
+    changeSelection(deselected, QItemSelectionModel::Deselect);
 }
 
 QModelIndex AssemblyAnnotationsTreeViewModel::getAnnotationModelIndex(Annotation* annotation) {
@@ -129,7 +130,7 @@ void AssemblyAnnotationsTreeViewModel::sl_contextChanged(SequenceObjectContext* 
 void AssemblyAnnotationsTreeViewModel::addAnnotationTableObject(AnnotationTableObject* newObj) {
     beginInsertRows(QModelIndex(), rootItem->getRowNum(), rootItem->getRowNum());
 
-    QVariantList tableObjData = getTableObjData(newObj);
+    QVariantList tableObjData = AssemblyAnnotationsAreaUtils::getTableObjData(newObj);
     AssemblyAnnotationsTreeItem* tableObjItem = new AssemblyAnnotationsTreeItem(tableObjData, rootItem);
     endInsertRows();
     addAnnotations(newObj->getAnnotations(), tableObjItem);
@@ -143,7 +144,7 @@ void AssemblyAnnotationsTreeViewModel::addAnnotations(const QList<Annotation*>& 
     QMap<Annotation*, AssemblyAnnotationsTreeItem*> annotationItemHash;
     beginInsertRows(tableObjectIndex, 0, annotations.size() - 1);
     foreach(Annotation* ann, annotations) {
-        QVariantList annData = getAnnotationData(ann);
+        QVariantList annData = AssemblyAnnotationsAreaUtils::getAnnotationData(ann);
         AssemblyAnnotationsTreeItem* annObjItem = new AssemblyAnnotationsTreeItem(annData, parentItem);
         indexAnnotationMap.insert(createIndex(annObjItem->getRowNum(), 0, annObjItem), ann);
         annotationItemHash.insert(ann, annObjItem);
@@ -162,33 +163,10 @@ void AssemblyAnnotationsTreeViewModel::addQualifiers(const QList<U2Qualifier>& q
     QModelIndex annotationObjectIndex = createIndex(parentItem->getRowNum(), 0, parentItem);
     beginInsertRows(annotationObjectIndex, 0, qualifiers.size() - 1);
     foreach(const U2Qualifier& qualifier, qualifiers) {
-        QVariantList qualifierData = getQualifierData(qualifier);
+        QVariantList qualifierData = AssemblyAnnotationsAreaUtils::getQualifierData(qualifier);
         new AssemblyAnnotationsTreeItem(qualifierData, parentItem);
     }
     endInsertRows();
-}
-
-QVariantList AssemblyAnnotationsTreeViewModel::getTableObjData(AnnotationTableObject* obj) const {
-    const QString annTableObjName = obj->getGObjectName();
-    const QString docShortName = obj->getDocument()->getName();
-    QVariantList tableObjData = { annTableObjName + " [" + docShortName + "]", "" };
-
-    return tableObjData;
-}
-
-QVariantList AssemblyAnnotationsTreeViewModel::getAnnotationData(Annotation* ann) const {
-    U2Location location = ann->getLocation();
-    U2LocationData* annLocationData = location.data();
-    QString annRegionString = U1AnnotationUtils::buildLocationString(*annLocationData);
-    QVariantList annData = { ann->getName(), annRegionString };
-
-    return annData;
-}
-
-QVariantList AssemblyAnnotationsTreeViewModel::getQualifierData(const U2Qualifier& qualifier) const {
-    QVariantList qualifierData = { qualifier.name, qualifier.value };
-
-    return qualifierData;
 }
 
 void AssemblyAnnotationsTreeViewModel::cleanAnnotationTree() {
@@ -199,17 +177,22 @@ void AssemblyAnnotationsTreeViewModel::cleanAnnotationTree() {
     }
 }
 
-void AssemblyAnnotationsTreeViewModel::changeSelection(const QModelIndexList& items, const Mode mode) const {
+void AssemblyAnnotationsTreeViewModel::changeSelection(const QModelIndexList& items,
+                                                       const QItemSelectionModel::SelectionFlag mode) const {
+    SAFE_POINT(nullptr != ctx, "Sequence Object Context is missed", );
+
     foreach(const QModelIndex& index, items) {
         Annotation* annotation = indexAnnotationMap.value(index, nullptr);
         CHECK_CONTINUE(nullptr != annotation);
 
         AnnotationSelection* as = ctx->getAnnotationsSelection();
+        SAFE_POINT(nullptr != as, "Annotation Selection is missed", );
+
         switch (mode) {
-        case Mode::Select:
+        case QItemSelectionModel::Select:
             as->addToSelection(annotation);
             break;
-        case Mode::Deselect:
+        case QItemSelectionModel::Deselect:
             as->removeFromSelection(annotation);
             break;
         default:

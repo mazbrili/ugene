@@ -23,6 +23,7 @@
 #define _U2_ASSEMBLY_ANNOTATIONS_TREE_VIEW_MODEL_H_
 
 #include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include <QMap>
 #include <QModelIndex>
 #include <QVariant>
@@ -58,20 +59,12 @@ private slots:
     void sl_contextChanged(SequenceObjectContext* ctx);
 
 private:
-    enum class Mode {
-        Select,
-        Deselect
-    };
-
     void addAnnotationTableObject(AnnotationTableObject *newObj);
     void addAnnotations(const QList<Annotation*>& annotations, AssemblyAnnotationsTreeItem* parentItem);
     void addQualifiers(const QList<U2Qualifier>& qualifiers, AssemblyAnnotationsTreeItem* parentItem);
-    QVariantList getTableObjData(AnnotationTableObject* obj) const;
-    QVariantList getAnnotationData(Annotation* ann) const;
-    QVariantList getQualifierData(const U2Qualifier& qualifier) const;
 
     void cleanAnnotationTree();
-    void changeSelection(const QModelIndexList& items, const Mode mode) const;
+    void changeSelection(const QModelIndexList& items, const QItemSelectionModel::SelectionFlag mode) const;
 
     AssemblyAnnotationsTreeItem* rootItem;
     SequenceObjectContext* ctx;

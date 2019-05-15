@@ -30,6 +30,7 @@
 
 #include "../AssemblyBrowser.h"
 #include "AssemblyAnnotationsArea.h"
+#include "AssemblyAnnotationsAreaUtils.h"
 #include "AssemblyAnnotationsAreaWidget.h"
 #include "AssemblyAnnotationsRenderAreaFactory.h"
 
@@ -72,6 +73,8 @@ void AssemblyAnnotationsAreaWidget::keyPressEvent(QKeyEvent *e) {
     switch (key) {
     case Qt::Key_Escape:
         GSequenceLineViewAnnotated::clearAllSelections();
+        AssemblyAnnotationsTreeView* treeView = browserUi->getAnnotationsTreeView();
+
         accepted = true;
         break;
     }
@@ -103,29 +106,25 @@ void AssemblyAnnotationsAreaWidget::sl_offsetsChanged() {
 }
 
 void AssemblyAnnotationsAreaWidget::sl_annotationSelection(AnnotationSelectionData* asd) {
-    const Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
-    const bool controlOrShiftPressed = modifiers.testFlag(Qt::ControlModifier)
-        || modifiers.testFlag(Qt::ShiftModifier);
-    Annotation* clickedAnnotations = asd->annotation;
     AnnotationSelection* as = ctx->getAnnotationsSelection();
-    const QList<Annotation*> selectedAnnotations = as->getSelectedAnnotations();
-    if (!selectedAnnotations.contains(clickedAnnotations)) {
-        as->addToSelection(clickedAnnotations);
-        if (!controlOrShiftPressed) {
-            foreach(Annotation* ann, selectedAnnotations) {
-                as->removeFromSelection(ann);
-            }
-        }
-    } else {
-        if (controlOrShiftPressed) {
-            as->removeFromSelection(clickedAnnotations);
-        } else{
-            foreach(Annotation* ann, selectedAnnotations) {
-                CHECK_CONTINUE(clickedAnnotations != ann);
+    SAFE_POINT(nullptr != as, "Annotation Selection is missed", );
 
-                as->removeFromSelection(ann);
-            }
-        }
+    Annotation* clickedAnnotation = asd->annotation;
+    const QList<Annotation*> selectedAnnotations = as->getSelectedAnnotations();
+    QItemSelectionModel::SelectionFlag clickedAnnotationFlag = QItemSelectionModel::NoUpdate;
+    QList<Annotation*> toDeselect;
+    AssemblyAnnotationsAreaUtils::collectSelectionInfo<Annotation*>(clickedAnnotation, selectedAnnotations, clickedAnnotationFlag, toDeselect);
+
+    switch (clickedAnnotationFlag) {
+    case QItemSelectionModel::Select:
+        as->addToSelection(clickedAnnotation);
+        break;
+    case QItemSelectionModel::Deselect:
+        as->removeFromSelection(clickedAnnotation);
+        break;
+    }
+    foreach(Annotation* ann, toDeselect) {
+        as->removeFromSelection(ann);
     }
 }
 
