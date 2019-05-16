@@ -189,16 +189,14 @@ QList<AnnotationSelectionData> GSequenceLineViewAnnotated::selectAnnotationByCoo
     U2Region reg(pos - dPos, 1 + 2 * dPos);
     const QSet<AnnotationTableObject *> aObjs = ctx->getAnnotationObjects(true);
     foreach (AnnotationTableObject *ao, aObjs) {
-        QList<Annotation *> annByReg = ao->getAnnotationsByRegion(reg);
-        foreach(Annotation *a, annByReg) {
+        foreach(Annotation *a, ao->getAnnotationsByRegion(reg)) {
             const SharedAnnotationData &aData = a->getData();
             const QVector<U2Region> location = aData->getRegions();
             for (int i = 0, n = location.size(); i < n; i++) {
                 const U2Region &l = location[i];
                 if (l.intersects(reg) || l.endPos() == reg.startPos) {
                     bool ok = true;
-                    qint64 ep = l.endPos();
-                    if (ep == pos || pos == l.startPos) { //now check pixel precise coords for boundaries
+                    if (l.endPos() == pos || pos == l.startPos) { //now check pixel precise coords for boundaries
                         int x1 = ra->posToCoord(l.startPos, true);
                         int x2 = ra->posToCoord(l.endPos(), true);
                         ok = p.x() <= x2 && p.x() >= x1;

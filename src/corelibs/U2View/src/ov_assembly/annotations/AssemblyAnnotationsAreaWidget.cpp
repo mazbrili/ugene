@@ -73,8 +73,6 @@ void AssemblyAnnotationsAreaWidget::keyPressEvent(QKeyEvent *e) {
     switch (key) {
     case Qt::Key_Escape:
         GSequenceLineViewAnnotated::clearAllSelections();
-        AssemblyAnnotationsTreeView* treeView = browserUi->getAnnotationsTreeView();
-
         accepted = true;
         break;
     }
@@ -121,6 +119,9 @@ void AssemblyAnnotationsAreaWidget::sl_annotationSelection(AnnotationSelectionDa
         break;
     case QItemSelectionModel::Deselect:
         as->removeFromSelection(clickedAnnotation);
+        break;
+    case QItemSelectionModel::NoUpdate:
+        //possible, but nothing we need to do
         break;
     }
     foreach(Annotation* ann, toDeselect) {
