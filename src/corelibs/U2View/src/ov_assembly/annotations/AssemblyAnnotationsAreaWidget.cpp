@@ -93,17 +93,7 @@ int AssemblyAnnotationsAreaWidget::getHorizontalScrollBarPosition() const {
     return scrollBar->sliderPosition();
 }
 
-void AssemblyAnnotationsAreaWidget::sl_zoomPerformed() {
-    updateVisibleRange();
-    update();
-}
-
-void AssemblyAnnotationsAreaWidget::sl_offsetsChanged() {
-    updateVisibleRange();
-    update();
-}
-
-void AssemblyAnnotationsAreaWidget::sl_annotationSelection(AnnotationSelectionData* asd) {
+void AssemblyAnnotationsAreaWidget::proceedAnnotationSelection(AnnotationSelectionData* asd)const {
     AnnotationSelection* as = ctx->getAnnotationsSelection();
     SAFE_POINT(nullptr != as, "Annotation Selection is missed", );
 
@@ -113,20 +103,30 @@ void AssemblyAnnotationsAreaWidget::sl_annotationSelection(AnnotationSelectionDa
     QList<Annotation*> toDeselect;
     AssemblyAnnotationsAreaUtils::collectSelectionInfo<Annotation*>(clickedAnnotation, selectedAnnotations, clickedAnnotationFlag, toDeselect);
 
+    QList<Annotation*> toSelect;
     switch (clickedAnnotationFlag) {
     case QItemSelectionModel::Select:
-        as->addToSelection(clickedAnnotation);
+        toSelect << clickedAnnotation;
         break;
     case QItemSelectionModel::Deselect:
-        as->removeFromSelection(clickedAnnotation);
+        toDeselect << clickedAnnotation;
         break;
     case QItemSelectionModel::NoUpdate:
         //possible, but nothing we need to do
         break;
     }
-    foreach(Annotation* ann, toDeselect) {
-        as->removeFromSelection(ann);
-    }
+
+    as->changeSelection(toSelect, toDeselect);
+}
+
+void AssemblyAnnotationsAreaWidget::sl_zoomPerformed() {
+    updateVisibleRange();
+    update();
+}
+
+void AssemblyAnnotationsAreaWidget::sl_offsetsChanged() {
+    updateVisibleRange();
+    update();
 }
 
 void AssemblyAnnotationsAreaWidget::connectSlots() const {

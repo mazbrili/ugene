@@ -51,7 +51,8 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     void changeSelection(const QModelIndexList& selected, const QModelIndexList& deselected) const;
-    QModelIndex getAnnotationModelIndex(Annotation* annotation);
+    QModelIndex getAnnotationModelIndex(Annotation* annotation) const;
+    QModelIndexList getIndexListByAnnotationList(const QList<Annotation*>& abbotationList) const;
 
 private slots:
     void sl_annotationObjectAdded(AnnotationTableObject* obj);
@@ -64,7 +65,7 @@ private:
     void addQualifiers(const QList<U2Qualifier>& qualifiers, AssemblyAnnotationsTreeItem* parentItem);
 
     void cleanAnnotationTree();
-    void changeSelection(const QModelIndexList& items, const QItemSelectionModel::SelectionFlag mode) const;
+    QList<Annotation*> getAnnotationListByIndexList(const QModelIndexList& indexList) const;
 
     AssemblyAnnotationsTreeItem* rootItem;
     SequenceObjectContext* ctx;

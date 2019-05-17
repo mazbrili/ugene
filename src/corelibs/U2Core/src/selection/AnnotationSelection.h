@@ -88,6 +88,10 @@ public:
 
     void                                    removeFromSelection(Annotation *a, int locationIdx = -1);
 
+    void                                    changeSelection(QList<Annotation*> selected, QList<Annotation*> deselected);
+
+    void                                    changeSelection(QMap<Annotation*, int> selected, QMap<Annotation*, int> deselected);
+
     bool                                    isEmpty() const;
 
     void                                    clear();
@@ -109,6 +113,14 @@ signals:
     void si_selectionChanged(AnnotationSelection *thiz, const QList<Annotation *> &added, const QList<Annotation *> &removed);
 
 private:
+    enum class SelectionMode {
+        Nothing,
+        Location,
+        Annotation
+    };
+
+    SelectionMode findOutModeToSelect(Annotation *a, const int locationIdx);
+    SelectionMode findOutModeToDeselect(Annotation *a, const int locationIdx);
     QList<AnnotationSelectionData> selection;
 };
 

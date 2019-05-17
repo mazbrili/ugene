@@ -1,23 +1,23 @@
 /**
-* UGENE - Integrated Bioinformatics Tools.
-* Copyright (C) 2008-2019 UniPro <ugene@unipro.ru>
-* http://ugene.net
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-* MA 02110-1301, USA.
-*/
+ * UGENE - Integrated Bioinformatics Tools.
+ * Copyright (C) 2008-2019 UniPro <ugene@unipro.ru>
+ * http://ugene.net
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
 
 #include <QApplication>
 #include <QItemSelection>
@@ -34,6 +34,7 @@
 namespace U2 {
 
 AssemblyAnnotationsTreeView::AssemblyAnnotationsTreeView(QWidget *parent) : QTreeView(parent) {
+    setModel(new AssemblyAnnotationsTreeViewModel(this));
     setSelectionMode(ExtendedSelection);
 }
 
@@ -60,6 +61,17 @@ void AssemblyAnnotationsTreeView::selectionChanged(const QItemSelection &selecte
 
     treeViewModel->changeSelection(selected.indexes(), deselected.indexes());
     QTreeView::selectionChanged(selected, deselected);
+}
+
+void AssemblyAnnotationsTreeView::sl_onAnnotationSelectionChanged(AnnotationSelection *as,
+                                                                  const QList<Annotation *>& added,
+                                                                  const QList<Annotation *>& removed) {
+    AssemblyAnnotationsTreeViewModel* treeViewModel = getModel();
+    CHECK(nullptr != treeViewModel, );
+
+    QModelIndexList toAdd = treeViewModel->getIndexListByAnnotationList(added);
+    QModelIndexList toRemove = treeViewModel->getIndexListByAnnotationList(removed);
+
 }
 
 void AssemblyAnnotationsTreeView::sl_annotationSelection(AnnotationSelectionData* asd) {
@@ -113,7 +125,6 @@ void AssemblyAnnotationsTreeView::sl_annotationSelection(AnnotationSelectionData
         selModel->select(selected, QItemSelectionModel::Select);
         selModel->select(deselected, QItemSelectionModel::Deselect);
         QTreeView::selectionChanged(selected, deselected);
-
     }
 }
 

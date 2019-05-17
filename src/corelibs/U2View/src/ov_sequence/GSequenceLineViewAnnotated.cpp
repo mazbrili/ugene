@@ -253,7 +253,7 @@ void GSequenceLineViewAnnotated::mousePressEvent(QMouseEvent *me) {
                 }
             }
             if (NULL != asd) {
-                ctx->emitAnnotationSelection(asd);
+                proceedAnnotationSelection(asd);
             }
         }
     }
@@ -381,9 +381,11 @@ void GSequenceLineViewAnnotated::ensureVisible(Annotation *a, int locationIdx) {
 }
 
 void GSequenceLineViewAnnotated::clearAllSelections() const {
-    ctx->getAnnotationsSelection()->clear();
-    ctx->getSequenceSelection()->clear();
-    ctx->emitClearSelectedAnnotationRegions();
+    ctx->clearAllSelections();
+}
+
+void GSequenceLineViewAnnotated::proceedAnnotationSelection(AnnotationSelectionData* asd) const {
+    ctx->emitAnnotationSelection(asd);
 }
 
 bool GSequenceLineViewAnnotated::event(QEvent *e) {

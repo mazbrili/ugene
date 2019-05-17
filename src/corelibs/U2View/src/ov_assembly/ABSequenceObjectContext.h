@@ -19,45 +19,27 @@
  * MA 02110-1301, USA.
  */
 
-#ifndef _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
-#define _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
+#ifndef _U2_AB_SEQUENCE_OBJECT_CONTEXT_H_
+#define _U2_AB_SEQUENCE_OBJECT_CONTEXT_H_
 
-#include <U2View/PanView.h>
+#include <QObject>
+
+#include "ov_sequence/SequenceObjectContext.h"
 
 namespace U2 {
 
 class AssemblyBrowser;
-class AssemblyBrowserUi;
 
-class AssemblyAnnotationsAreaWidget : public PanView {
+class U2VIEW_EXPORT ABSequenceObjectContext : public SequenceObjectContext {
     Q_OBJECT
 public:
-    AssemblyAnnotationsAreaWidget(AssemblyBrowser* browser, AssemblyBrowserUi *ui, SequenceObjectContext* ctx);
-
-protected:
-    void mouseDoubleClickEvent(QMouseEvent* me) override;
-    void mouseMoveEvent(QMouseEvent *e) override;
-    void keyPressEvent(QKeyEvent *e) override;
-
-    void clearAllSelections() const override;
-    int getHorizontalScrollBarPosition() const override;
-    void proceedAnnotationSelection(AnnotationSelectionData* asd) const override;
-
-signals:
-    void si_mouseMovedToPos(const QPoint&);
-
-private slots:
-    void sl_zoomPerformed();
-    void sl_offsetsChanged();
+    ABSequenceObjectContext(AssemblyBrowser* v, U2SequenceObject* obj);
 
 private:
-    void connectSlots() const;
-    void updateVisibleRange();
-
+    void connectStots();
     AssemblyBrowser* browser;
-    AssemblyBrowserUi* browserUi;
 };
 
-} // U2
+} //namespace
 
-#endif // _ASSEMBLY_ANNOTATIONS_AREA_WIDGET_
+#endif //_U2_AB_SEQUENCE_OBJECT_CONTEXT_H_

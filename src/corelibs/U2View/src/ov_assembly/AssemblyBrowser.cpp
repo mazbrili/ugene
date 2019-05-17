@@ -1197,8 +1197,6 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         variantsArea = new AssemblyVariantsArea(this);
         annotationsArea = new AssemblyAnnotationsArea(this);
         annotationsTreeView = new AssemblyAnnotationsTreeView(this);
-        AssemblyAnnotationsTreeViewModel* annotationsTreeViewModel = new AssemblyAnnotationsTreeViewModel(this);
-        annotationsTreeView->setModel(annotationsTreeViewModel);
 
         QVBoxLayout *mainVerticalLayout = new QVBoxLayout();
         mainVerticalLayout->setMargin(0);
@@ -1268,7 +1266,7 @@ AssemblyBrowserUi::AssemblyBrowserUi(AssemblyBrowser * browser_)
         connect(zoomableOverview, SIGNAL(si_coverageReady()), readsArea, SLOT(sl_redraw()));
         connect(referenceArea, SIGNAL(si_unassociateReference()), browser, SLOT(sl_unassociateReference()));
         connect(browser->getModel().data(), SIGNAL(si_contextChanged(SequenceObjectContext*)),
-                annotationsTreeViewModel, SLOT(sl_contextChanged(SequenceObjectContext*)));
+                annotationsTreeView->model(), SLOT(sl_contextChanged(SequenceObjectContext*)));
     }
     // do not how to show them
     else {

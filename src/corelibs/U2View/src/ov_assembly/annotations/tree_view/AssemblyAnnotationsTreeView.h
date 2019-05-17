@@ -27,6 +27,8 @@
 
 namespace U2 {
 
+class Annotation;
+class AnnotationSelection;
 class AnnotationSelectionData;
 class AssemblyAnnotationsTreeViewModel;
 
@@ -40,6 +42,9 @@ protected:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) override;
 
 private slots:
+    void sl_onAnnotationSelectionChanged(AnnotationSelection *as,
+                                         const QList<Annotation *>& added,
+                                         const QList<Annotation *>& removed);
     void sl_annotationSelection(AnnotationSelectionData* asd);
     void sl_clearSelectedAnnotations();
 

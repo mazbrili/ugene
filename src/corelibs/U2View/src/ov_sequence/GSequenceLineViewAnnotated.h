@@ -64,6 +64,7 @@ protected:
     virtual void                            unregisterAnnotations(const QList<Annotation *> &l);
     virtual void                            ensureVisible(Annotation *a, int locationIdx);
     virtual void                            clearAllSelections() const;
+    virtual void                            proceedAnnotationSelection(AnnotationSelectionData* asd) const;
 
 protected slots:
     virtual void                            sl_onAnnotationSettingsChanged(const QStringList &changedSettings);

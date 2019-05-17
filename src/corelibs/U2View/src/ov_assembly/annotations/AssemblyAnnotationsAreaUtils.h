@@ -35,34 +35,36 @@ class U2Qualifier;
 
 class AssemblyAnnotationsAreaUtils {
 public:
-    template <class T>
-    static void collectSelectionInfo(T clickedItem,
-                                     const QList<T>& selectedItemList,
-                                     QItemSelectionModel::SelectionFlag& clickedItemFlag,
-                                     QList<T>& toDesetectItemList) {
-        const Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
-        const bool controlOrShiftPressed = modifiers.testFlag(Qt::ControlModifier)
-                                        || modifiers.testFlag(Qt::ShiftModifier);
-
-        if (!selectedItemList.contains(clickedItem)) {
-            clickedItemFlag = QItemSelectionModel::Select;
-            if (!controlOrShiftPressed) {
-                toDesetectItemList = selectedItemList;
-            }
-        } else {
-            if (controlOrShiftPressed) {
-                clickedItemFlag = QItemSelectionModel::Deselect;
-            } else {
-                toDesetectItemList = selectedItemList;
-                toDesetectItemList.removeOne(clickedItem);
-            }
-        }
-    }
     static QItemSelection rowSelection(AssemblyAnnotationsTreeViewModel* treeViewModel,
                                        const QModelIndex& rowIndex);
     static QVariantList getTableObjData(AnnotationTableObject* obj);
     static QVariantList getAnnotationData(Annotation* ann);
     static QVariantList getQualifierData(const U2Qualifier& qualifier);
+
+    template <class T>
+    static inline void collectSelectionInfo(T clickedItem,
+                                            const QList<T>& selectedItemList,
+                                            QItemSelectionModel::SelectionFlag& clickedItemFlag,
+                                            QList<T>& toDeselectItemList) {
+        const Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+        const bool controlOrShiftPressed = modifiers.testFlag(Qt::ControlModifier)
+            || modifiers.testFlag(Qt::ShiftModifier);
+
+        if (!selectedItemList.contains(clickedItem)) {
+            clickedItemFlag = QItemSelectionModel::Select;
+            if (!controlOrShiftPressed) {
+                toDeselectItemList = selectedItemList;
+            }
+        } else {
+            if (controlOrShiftPressed) {
+                clickedItemFlag = QItemSelectionModel::Deselect;
+            } else {
+                toDeselectItemList = selectedItemList;
+                toDeselectItemList.removeOne(clickedItem);
+            }
+        }
+    }
+
 };
 
 } // U2
