@@ -48,10 +48,9 @@
 #include <U2Core/U2SqlHelpers.h>
 #include <U2Core/VariantTrackObject.h>
 
-#include <U2View/SequenceObjectContext.h>
-
 #include <U2Gui/ObjectViewTasks.h>
 
+#include "ABSequenceObjectContext.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyModel.h"
 
@@ -494,14 +493,14 @@ QByteArray AssemblyModel::getReferenceRegion(const U2Region& region, U2OpStatus&
     return refObj->getSequenceData(region);
 }
 
-void AssemblyModel::setSequenceObjectContext(SequenceObjectContext* seqCtx) {
-    SequenceObjectContext* tmp_ctx = ctx;
+void AssemblyModel::setSequenceObjectContext(ABSequenceObjectContext* seqCtx) {
+    ABSequenceObjectContext* tmp_ctx = ctx;
     ctx = seqCtx;
     emit si_contextChanged(ctx);
     delete tmp_ctx;
 }
 
-SequenceObjectContext* AssemblyModel::getSequenceObjectContext() const {
+ABSequenceObjectContext* AssemblyModel::getSequenceObjectContext() const {
     return ctx;
 }
 

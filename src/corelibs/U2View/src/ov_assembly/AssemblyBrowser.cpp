@@ -77,6 +77,7 @@
 #include "annotations/AssemblyAnnotationsArea.h"
 #include "annotations/tree_view/AssemblyAnnotationsTreeView.h"
 #include "annotations/tree_view/AssemblyAnnotationsTreeViewModel.h"
+#include "ABSequenceObjectContext.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyBrowserFactory.h"
 #include "AssemblyBrowserSettings.h"
@@ -140,9 +141,7 @@ void AssemblyBrowser::sl_referenceChanged() {
 
     U2SequenceObject *so = model->getRefObj();
     if (so != nullptr) {
-        SequenceObjectContext* seqCtx = new SequenceObjectContext(so, nullptr);
-        model->setSequenceObjectContext(seqCtx);
-        connectContextWithAnnotationTreeModel(seqCtx);
+        model->setSequenceObjectContext(new ABSequenceObjectContext(this, so));
         addObjectToView(so);
     }
     setReferenceAction->setEnabled(!model->isLoadingReference());
@@ -1083,33 +1082,12 @@ void AssemblyBrowser::addAnnotationView(U2SequenceObject* seqObj) {
 }
 
 void AssemblyBrowser::addAnnotationTableObjectToView(AnnotationTableObject* annTableObj) {
-    SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
+    ABSequenceObjectContext* seqCtx = model->getSequenceObjectContext();
     SAFE_POINT(nullptr != seqCtx, "Sequence Object Context is missed", );
     CHECK(!seqCtx->getAnnotationObjects().contains(annTableObj), );
 
     seqCtx->addAnnotationObject(annTableObj);
     addObjectToView(annTableObj);
-}
-
-void AssemblyBrowser::connectContextWithAnnotationTreeModel(SequenceObjectContext* ctx) {
-    CHECK(nullptr != ui, );
-
-    AssemblyAnnotationsTreeView* annTreeView = ui->getAnnotationsTreeView();
-    SAFE_POINT(nullptr != annTreeView, "Assembly Annotation Tree View is missed", );
-
-    connect(ctx, SIGNAL(si_annotationSelection(AnnotationSelectionData*)),
-            annTreeView, SLOT(sl_annotationSelection(AnnotationSelectionData*)));
-
-    connect(ctx, SIGNAL(si_clearSelectedAnnotationRegions()),
-            annTreeView, SLOT(sl_clearSelectedAnnotations()));
-
-    QAbstractItemModel* annTreeViewModel = annTreeView->model();
-    SAFE_POINT(nullptr != annTreeViewModel, "Assembly Annotation Tree View Model is missed", );
-
-    connect(ctx, SIGNAL(si_annotationObjectAdded(AnnotationTableObject*)),
-            annTreeViewModel, SLOT(sl_annotationObjectAdded(AnnotationTableObject*)));
-    connect(ctx, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)),
-            annTreeViewModel, SLOT(sl_annotationObjectRemoved(AnnotationTableObject*)));
 }
 
 void AssemblyBrowser::sl_setReference() {

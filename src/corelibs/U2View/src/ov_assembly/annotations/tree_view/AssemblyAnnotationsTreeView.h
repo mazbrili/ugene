@@ -45,11 +45,13 @@ private slots:
     void sl_onAnnotationSelectionChanged(AnnotationSelection *as,
                                          const QList<Annotation *>& added,
                                          const QList<Annotation *>& removed);
-    void sl_annotationSelection(AnnotationSelectionData* asd);
     void sl_clearSelectedAnnotations();
 
 private:
     AssemblyAnnotationsTreeViewModel* getModel() const;
+    void expandList(const QModelIndexList& indexList);
+
+    bool nativeSelectionChanged;
 };
 
 }

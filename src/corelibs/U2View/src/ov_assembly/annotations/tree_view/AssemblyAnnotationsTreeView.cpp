@@ -28,12 +28,12 @@
 #include "AssemblyAnnotationsTreeViewModel.h"
 
 #include <U2Core/AnnotationSelection.h>
-#include <U2Core/SignalBlocker.h>
 #include <U2Core/U2SafePoints.h>
 
 namespace U2 {
 
-AssemblyAnnotationsTreeView::AssemblyAnnotationsTreeView(QWidget *parent) : QTreeView(parent) {
+AssemblyAnnotationsTreeView::AssemblyAnnotationsTreeView(QWidget *parent) : QTreeView(parent),
+                                                                            nativeSelectionChanged(true) {
     setModel(new AssemblyAnnotationsTreeViewModel(this));
     setSelectionMode(ExtendedSelection);
 }
@@ -56,10 +56,13 @@ void AssemblyAnnotationsTreeView::keyPressEvent(QKeyEvent *e) {
 }
 
 void AssemblyAnnotationsTreeView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    AssemblyAnnotationsTreeViewModel* treeViewModel = getModel();
-    CHECK(nullptr != treeViewModel, );
+    if (nativeSelectionChanged) {
+        AssemblyAnnotationsTreeViewModel* treeViewModel = getModel();
+        CHECK(nullptr != treeViewModel, );
 
-    treeViewModel->changeSelection(selected.indexes(), deselected.indexes());
+        treeViewModel->changeSelection(selected.indexes(), deselected.indexes());
+    }
+    nativeSelectionChanged = true;
     QTreeView::selectionChanged(selected, deselected);
 }
 
@@ -69,63 +72,21 @@ void AssemblyAnnotationsTreeView::sl_onAnnotationSelectionChanged(AnnotationSele
     AssemblyAnnotationsTreeViewModel* treeViewModel = getModel();
     CHECK(nullptr != treeViewModel, );
 
-    QModelIndexList toAdd = treeViewModel->getIndexListByAnnotationList(added);
-    QModelIndexList toRemove = treeViewModel->getIndexListByAnnotationList(removed);
-
-}
-
-void AssemblyAnnotationsTreeView::sl_annotationSelection(AnnotationSelectionData* asd) {
-    Annotation* ann = asd->annotation;
-    AssemblyAnnotationsTreeViewModel* treeViewModel = getModel();
-    CHECK(nullptr != treeViewModel, );
-
-    QModelIndex annotationModelIndex = treeViewModel->getAnnotationModelIndex(ann);
-    CHECK(annotationModelIndex.isValid(), );
-
-    expand(annotationModelIndex.parent());
-
     QItemSelectionModel* selModel = selectionModel();
     SAFE_POINT(nullptr != selModel, "Selection Model is missed", );
 
-    QModelIndexList selectedAnnotationModelIndexList = selModel->selectedRows();
-    QItemSelectionModel::SelectionFlag clickedModelIndexFlag = QItemSelectionModel::NoUpdate;
-    QModelIndexList toDeselect;
-    AssemblyAnnotationsAreaUtils::collectSelectionInfo<QModelIndex>(annotationModelIndex,
-                                                                    selectedAnnotationModelIndexList,
-                                                                    clickedModelIndexFlag,
-                                                                    toDeselect);
-    QItemSelection clickedRow = AssemblyAnnotationsAreaUtils::rowSelection(treeViewModel, annotationModelIndex);
-    QItemSelection deselectRows;
-    foreach(const QModelIndex& index, toDeselect) {
-        QItemSelection rowToDeselect = AssemblyAnnotationsAreaUtils::rowSelection(treeViewModel, index);
-        deselectRows.merge(rowToDeselect, QItemSelectionModel::Select);
-    }
+    QModelIndexList toAdd = treeViewModel->getIndexListByAnnotationList(added);
+    QModelIndexList toRemove = treeViewModel->getIndexListByAnnotationList(removed);
 
-    QItemSelection selected;
-    QItemSelection deselected;
-    switch (clickedModelIndexFlag) {
-    case QItemSelectionModel::Select:
-        selected = clickedRow;
-        deselected = deselectRows;
-        break;
-    case QItemSelectionModel::Deselect:
-        deselected = deselectRows;
-        deselected.merge(clickedRow, QItemSelectionModel::Select);
-        break;
-    case QItemSelectionModel::NoUpdate:
-        deselected = deselectRows;
-        break;
-    default:
-        FAIL("Unexpected Selection Flag", );
-    }
+    expandList(toAdd);
 
-    {
-        SignalBlocker signalBlocker(selectionModel());
-        Q_UNUSED(signalBlocker);
-        selModel->select(selected, QItemSelectionModel::Select);
-        selModel->select(deselected, QItemSelectionModel::Deselect);
-        QTreeView::selectionChanged(selected, deselected);
-    }
+    QItemSelection selected = AssemblyAnnotationsAreaUtils::getSelectionFromIndexList(toAdd);
+    QItemSelection deselected = AssemblyAnnotationsAreaUtils::getSelectionFromIndexList(toRemove);
+
+    nativeSelectionChanged = false;
+    selModel->select(selected, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+    nativeSelectionChanged = false;
+    selModel->select(deselected, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
 }
 
 void AssemblyAnnotationsTreeView::sl_clearSelectedAnnotations() {
@@ -140,6 +101,12 @@ AssemblyAnnotationsTreeViewModel* AssemblyAnnotationsTreeView::getModel() const 
     SAFE_POINT(nullptr != treeViewModel, "Assembly Annotations Tree View Model is missed", nullptr);
 
     return treeViewModel;
+}
+
+void AssemblyAnnotationsTreeView::expandList(const QModelIndexList& indexList) {
+    foreach(const QModelIndex& index, indexList) {
+        expand(index.parent());
+    }
 }
 
 }

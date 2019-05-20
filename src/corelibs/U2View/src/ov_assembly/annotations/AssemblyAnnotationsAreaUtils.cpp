@@ -26,9 +26,18 @@
 #include <U2Core/U1AnnotationUtils.h>
 
 #include "AssemblyAnnotationsAreaUtils.h"
-#include "tree_view\AssemblyAnnotationsTreeViewModel.h"
+#include "tree_view/AssemblyAnnotationsTreeViewModel.h"
 
 namespace U2 {
+
+QItemSelection AssemblyAnnotationsAreaUtils::getSelectionFromIndexList(const QModelIndexList& indexList) {
+    QItemSelection selection;
+    foreach(const QModelIndex& index, indexList) {
+        selection.merge(QItemSelection(index, index), QItemSelectionModel::Select);
+    }
+
+    return selection;
+}
 
 QItemSelection AssemblyAnnotationsAreaUtils::rowSelection(AssemblyAnnotationsTreeViewModel* treeViewModel,
                                                           const QModelIndex& rowIndex) {

@@ -24,6 +24,8 @@
 #include "annotations/tree_view/AssemblyAnnotationsTreeView.h"
 #include "annotations/tree_view/AssemblyAnnotationsTreeViewModel.h"
 
+#include <U2Core/Annotation.h>
+#include <U2Core/AnnotationSelection.h>
 #include <U2Core/U2SafePoints.h>
 
 namespace U2 {
@@ -31,6 +33,7 @@ namespace U2 {
 ABSequenceObjectContext::ABSequenceObjectContext(AssemblyBrowser* v, U2SequenceObject* obj)
     : SequenceObjectContext(obj, nullptr),
     browser(v) {
+    connectStots();
 }
 
 void ABSequenceObjectContext::connectStots() {
@@ -42,8 +45,14 @@ void ABSequenceObjectContext::connectStots() {
     AssemblyAnnotationsTreeView* annTreeView = ui->getAnnotationsTreeView();
     SAFE_POINT(nullptr != annTreeView, "Assembly Annotation Tree View is missed", );
 
-    connect(this, SIGNAL(si_annotationSelection(AnnotationSelectionData*)),
-            annTreeView, SLOT(sl_annotationSelection(AnnotationSelectionData*)));
+    connect(getAnnotationsSelection(),
+            SIGNAL(si_selectionChanged(AnnotationSelection*,
+                                       const QList<Annotation*>&,
+                                       const QList<Annotation*>&)),
+            annTreeView,
+            SLOT(sl_onAnnotationSelectionChanged(AnnotationSelection*,
+                                       const QList<Annotation*>&,
+                                       const QList<Annotation*>&)));
 
     connect(this, SIGNAL(si_clearSelectedAnnotationRegions()),
             annTreeView, SLOT(sl_clearSelectedAnnotations()));
@@ -55,6 +64,13 @@ void ABSequenceObjectContext::connectStots() {
             annTreeViewModel, SLOT(sl_annotationObjectAdded(AnnotationTableObject*)));
     connect(this, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)),
             annTreeViewModel, SLOT(sl_annotationObjectRemoved(AnnotationTableObject*)));
+
+    AssemblyModel* assemblyModel = browser->getModel().data();
+    SAFE_POINT(nullptr != assemblyModel, "Assembly Model is missed", );
+
+    connect(assemblyModel, SIGNAL(si_contextChanged(SequenceObjectContext*)),
+            annTreeViewModel, SLOT(sl_contextChanged(SequenceObjectContext*)));
+
 }
 
 } // namespace U2

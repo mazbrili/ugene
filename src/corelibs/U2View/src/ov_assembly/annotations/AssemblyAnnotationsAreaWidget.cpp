@@ -134,8 +134,6 @@ void AssemblyAnnotationsAreaWidget::connectSlots() const {
             browserUi->getAnnotationsArea(), SIGNAL(si_mouseMovedToPos(const QPoint &)));
     connect(browser, SIGNAL(si_zoomOperationPerformed()), SLOT(sl_zoomPerformed()));
     connect(browser, SIGNAL(si_offsetsChanged()), SLOT(sl_offsetsChanged()));
-    connect(ctx, SIGNAL(si_annotationSelection(AnnotationSelectionData*)),
-            SLOT(sl_annotationSelection(AnnotationSelectionData*)));
 }
 
 void AssemblyAnnotationsAreaWidget::updateVisibleRange() {
