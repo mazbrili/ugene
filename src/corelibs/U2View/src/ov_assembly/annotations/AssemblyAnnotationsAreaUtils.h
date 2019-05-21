@@ -46,27 +46,34 @@ public:
     static inline void collectSelectionInfo(T clickedItem,
                                             const QList<T>& selectedItemList,
                                             QItemSelectionModel::SelectionFlag& clickedItemFlag,
-                                            QList<T>& toDeselectItemList) {
-        const Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
-        const bool controlOrShiftPressed = modifiers.testFlag(Qt::ControlModifier)
-            || modifiers.testFlag(Qt::ShiftModifier);
-
-        if (!selectedItemList.contains(clickedItem)) {
-            clickedItemFlag = QItemSelectionModel::Select;
-            if (!controlOrShiftPressed) {
-                toDeselectItemList = selectedItemList;
-            }
-        } else {
-            if (controlOrShiftPressed) {
-                clickedItemFlag = QItemSelectionModel::Deselect;
-            } else {
-                toDeselectItemList = selectedItemList;
-                toDeselectItemList.removeOne(clickedItem);
-            }
-        }
-    }
+                                            QList<T>& toDeselectItemList);
 
 };
+
+template <class T>
+inline void AssemblyAnnotationsAreaUtils::collectSelectionInfo(T clickedItem,
+                                                               const QList<T>& selectedItemList,
+                                                               QItemSelectionModel::SelectionFlag& clickedItemFlag,
+                                                               QList<T>& toDeselectItemList) {
+    const Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+    const bool controlOrShiftPressed = modifiers.testFlag(Qt::ControlModifier)
+                                    || modifiers.testFlag(Qt::ShiftModifier);
+
+    if (!selectedItemList.contains(clickedItem)) {
+        clickedItemFlag = QItemSelectionModel::Select;
+        if (!controlOrShiftPressed) {
+            toDeselectItemList = selectedItemList;
+        }
+    } else {
+        if (controlOrShiftPressed) {
+            clickedItemFlag = QItemSelectionModel::Deselect;
+        } else {
+            toDeselectItemList = selectedItemList;
+            toDeselectItemList.removeOne(clickedItem);
+        }
+    }
+}
+
 
 } // U2
 

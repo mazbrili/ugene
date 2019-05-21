@@ -93,7 +93,7 @@ int AssemblyAnnotationsAreaWidget::getHorizontalScrollBarPosition() const {
     return scrollBar->sliderPosition();
 }
 
-void AssemblyAnnotationsAreaWidget::proceedAnnotationSelection(AnnotationSelectionData* asd)const {
+void AssemblyAnnotationsAreaWidget::proceedAnnotationSelection(AnnotationSelectionData* asd) const {
     AnnotationSelection* as = ctx->getAnnotationsSelection();
     SAFE_POINT(nullptr != as, "Annotation Selection is missed", );
 

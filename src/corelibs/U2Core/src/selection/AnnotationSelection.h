@@ -90,8 +90,6 @@ public:
 
     void                                    changeSelection(QList<Annotation*> selected, QList<Annotation*> deselected);
 
-    void                                    changeSelection(QMap<Annotation*, int> selected, QMap<Annotation*, int> deselected);
-
     bool                                    isEmpty() const;
 
     void                                    clear();
@@ -119,8 +117,8 @@ private:
         Annotation
     };
 
-    SelectionMode findOutModeToSelect(Annotation *a, const int locationIdx);
-    SelectionMode findOutModeToDeselect(Annotation *a, const int locationIdx);
+    SelectionMode getSelectionMode(Annotation *a, const int locationIdx, int& asdIndex) const;
+    SelectionMode getDeselectionMode(Annotation *a, const int locationIdx, int& asdIndex) const;
     QList<AnnotationSelectionData> selection;
 };
 

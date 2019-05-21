@@ -52,7 +52,7 @@ public:
 
     void changeSelection(const QModelIndexList& selected, const QModelIndexList& deselected) const;
     QModelIndex getAnnotationModelIndex(Annotation* annotation) const;
-    QModelIndexList getIndexListByAnnotationList(const QList<Annotation*>& abbotationList) const;
+    QModelIndexList getIndexListByAnnotationList(const QList<Annotation*>& annotationList) const;
 
 private slots:
     void sl_annotationObjectAdded(AnnotationTableObject* obj);

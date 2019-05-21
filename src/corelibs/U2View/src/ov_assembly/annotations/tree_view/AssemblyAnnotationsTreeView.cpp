@@ -33,7 +33,7 @@
 namespace U2 {
 
 AssemblyAnnotationsTreeView::AssemblyAnnotationsTreeView(QWidget *parent) : QTreeView(parent),
-                                                                            nativeSelectionChanged(true) {
+                                                                            selectionChangedFromOutside(true) {
     setModel(new AssemblyAnnotationsTreeViewModel(this));
     setSelectionMode(ExtendedSelection);
 }
@@ -56,13 +56,12 @@ void AssemblyAnnotationsTreeView::keyPressEvent(QKeyEvent *e) {
 }
 
 void AssemblyAnnotationsTreeView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    if (nativeSelectionChanged) {
+    if (selectionChangedFromOutside) {
         AssemblyAnnotationsTreeViewModel* treeViewModel = getModel();
         CHECK(nullptr != treeViewModel, );
 
         treeViewModel->changeSelection(selected.indexes(), deselected.indexes());
     }
-    nativeSelectionChanged = true;
     QTreeView::selectionChanged(selected, deselected);
 }
 
@@ -83,10 +82,10 @@ void AssemblyAnnotationsTreeView::sl_onAnnotationSelectionChanged(AnnotationSele
     QItemSelection selected = AssemblyAnnotationsAreaUtils::getSelectionFromIndexList(toAdd);
     QItemSelection deselected = AssemblyAnnotationsAreaUtils::getSelectionFromIndexList(toRemove);
 
-    nativeSelectionChanged = false;
+    selectionChangedFromOutside = false;
     selModel->select(selected, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-    nativeSelectionChanged = false;
     selModel->select(deselected, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+    selectionChangedFromOutside = true;
 }
 
 void AssemblyAnnotationsTreeView::sl_clearSelectedAnnotations() {

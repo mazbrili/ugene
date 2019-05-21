@@ -29,8 +29,7 @@ namespace U2 {
 
 class Annotation;
 class AnnotationSelection;
-class AnnotationSelectionData;
-class AssemblyAnnotationsTreeViewModel;
+    class AssemblyAnnotationsTreeViewModel;
 
 class AssemblyAnnotationsTreeView : public QTreeView {
 Q_OBJECT
@@ -51,7 +50,7 @@ private:
     AssemblyAnnotationsTreeViewModel* getModel() const;
     void expandList(const QModelIndexList& indexList);
 
-    bool nativeSelectionChanged;
+    bool selectionChangedFromOutside;
 };
 
 }

@@ -180,11 +180,23 @@ void AnnotationSelection::removeObjectAnnotations(AnnotationTableObject *obj) {
 }
 
 void AnnotationSelection::addToSelection(Annotation *a, int locationIdx) {
-    SelectionMode mode = findOutModeToSelect(a, locationIdx);
-    CHECK(mode != SelectionMode::Nothing, );
+    int asdIndex = -1;
+    SelectionMode mode = getSelectionMode(a, locationIdx, asdIndex);
 
-    if (mode == SelectionMode::Annotation) {
+    switch (mode) {
+    case SelectionMode::Nothing:
+        return;
+        break;
+    case SelectionMode::Location:
+        SAFE_POINT(0 <= asdIndex && asdIndex < selection.size(), "Unexpected Annotation Selection Data", );
+        selection[asdIndex].addLocation(locationIdx);
+        break;
+    case SelectionMode::Annotation:
         selection.append(AnnotationSelectionData(a, locationIdx));
+        break;
+    default:
+        FAIL("Unexpected result", );
+        break;
     }
 
     QList<Annotation *> tmp;
@@ -193,8 +205,26 @@ void AnnotationSelection::addToSelection(Annotation *a, int locationIdx) {
 }
 
 void AnnotationSelection::removeFromSelection(Annotation *a, int locationIdx) {
-    SelectionMode mode = findOutModeToDeselect(a, locationIdx);
-    CHECK(mode != SelectionMode::Nothing, );
+    int asdIndex = -1;
+    SelectionMode mode = getDeselectionMode(a, locationIdx, asdIndex);
+
+    switch (mode) {
+    case SelectionMode::Nothing:
+        return;
+        break;
+    case SelectionMode::Location:
+        SAFE_POINT(0 <= asdIndex && asdIndex < selection.size(), "Unexpected Annotation Selection Data", );
+        selection[asdIndex].deselectLocation(locationIdx);
+        break;
+    case SelectionMode::Annotation:
+        SAFE_POINT(0 <= asdIndex && asdIndex < selection.size(), "Unexpected Annotation Selection Data", );
+        selection[asdIndex].deselectLocation(locationIdx);
+        selection.removeAt(asdIndex);
+        break;
+    default:
+        FAIL("Unexpected result", );
+        break;
+    }
 
     QList<Annotation *> tmp;
     tmp.append(a);
@@ -202,40 +232,57 @@ void AnnotationSelection::removeFromSelection(Annotation *a, int locationIdx) {
 }
 
 void AnnotationSelection::changeSelection(QList<Annotation*> selected, QList<Annotation*> deselected) {
-    QMap<Annotation*, int> toSelect;
-    foreach(Annotation* ann, selected) {
-        toSelect.insert(ann, -1);
-    }
+    static const int defaultLocationIdx = -1;
 
-    QMap<Annotation*, int> toDeselect;
-    foreach(Annotation* ann, deselected) {
-        toDeselect.insert(ann, -1);
-    }
-    changeSelection(toSelect, toDeselect);
-}
-
-void AnnotationSelection::changeSelection(QMap<Annotation*, int> selected, QMap<Annotation*, int> deselected) {
     QList<Annotation *> toSelect;
-    foreach(Annotation* ann, selected.keys()) {
-        const int locationId = selected.value(ann);
-        SelectionMode mode = findOutModeToSelect(ann, locationId);
-        CHECK_CONTINUE(mode != SelectionMode::Nothing);
+    foreach(Annotation* ann, selected) {
+        int asdIndex = -1;
+        SelectionMode mode = getSelectionMode(ann, defaultLocationIdx, asdIndex);
 
-        if (mode == SelectionMode::Annotation) {
-            selection.append(AnnotationSelectionData(ann, locationId));
+        switch (mode) {
+        case SelectionMode::Nothing:
+            continue;
+            break;
+        case SelectionMode::Location:
+            SAFE_POINT_EXT(0 <= asdIndex && asdIndex < selection.size(), "Unexpected Annotation Selection Data", );
+            selection[asdIndex].addLocation(defaultLocationIdx);
+            break;
+        case SelectionMode::Annotation:
+            selection.append(AnnotationSelectionData(ann, defaultLocationIdx));
+            break;
+        default:
+            FAIL("Unexpected result", );
+            break;
         }
+
         toSelect << ann;
     }
 
     QList<Annotation *> toDeselect;
-    foreach(Annotation* ann, deselected.keys()) {
-        const int locationId = deselected.value(ann);
-        SelectionMode mode = findOutModeToDeselect(ann, locationId);
-        CHECK_CONTINUE(mode != SelectionMode::Nothing);
+    foreach(Annotation* ann, deselected) {
+        int asdIndex = -1;
+        SelectionMode mode = getDeselectionMode(ann, defaultLocationIdx, asdIndex);
+
+        switch (mode) {
+        case SelectionMode::Nothing:
+            continue;
+            break;
+        case SelectionMode::Location:
+            SAFE_POINT(0 <= asdIndex && asdIndex < selection.size(), "Unexpected Annotation Selection Data", );
+            selection[asdIndex].deselectLocation(defaultLocationIdx);
+            break;
+        case SelectionMode::Annotation:
+            SAFE_POINT(0 <= asdIndex && asdIndex < selection.size(), "Unexpected Annotation Selection Data", );
+            selection[asdIndex].deselectLocation(defaultLocationIdx);
+            selection.removeAt(asdIndex);
+            break;
+        default:
+            FAIL("Unexpected result", );
+            break;
+        }
 
         toDeselect << ann;
     }
-
     emit si_selectionChanged(this, toSelect, toDeselect);
 }
 
@@ -363,36 +410,37 @@ QVector<U2Region> AnnotationSelection::getSelectedLocations(const QSet<Annotatio
     return result;
 }
 
-AnnotationSelection::SelectionMode AnnotationSelection::findOutModeToSelect(Annotation *a, const int locationIdx) {
+AnnotationSelection::SelectionMode AnnotationSelection::getSelectionMode(Annotation *a, const int locationIdx, int& asdIndex) const {
     const int nRegionsTotal = a->getRegions().size();
     SAFE_POINT(locationIdx >= -1 && locationIdx < nRegionsTotal, "Invalid location index!", SelectionMode::Nothing);
 
     for (int i = 0; i < selection.size(); i++) {
-        AnnotationSelectionData& asd = selection[i];
+        const AnnotationSelectionData& asd = selection[i];
         if (asd.annotation == a) {
             if (asd.contains(locationIdx) || (locationIdx == -1 && asd.locationIdxList.size() == nRegionsTotal)) {
                 return SelectionMode::Nothing;
             }
 
-            asd.addLocation(locationIdx);
+            asdIndex = i;
             return SelectionMode::Location;
         }
     }
     return SelectionMode::Annotation;
 }
 
-AnnotationSelection::SelectionMode AnnotationSelection::findOutModeToDeselect(Annotation *a, const int locationIdx) {
+AnnotationSelection::SelectionMode AnnotationSelection::getDeselectionMode(Annotation *a, const int locationIdx, int& asdIndex) const {
     for (int i = 0; i < selection.size(); i++) {
-        AnnotationSelectionData& asd = selection[i];
+        const AnnotationSelectionData& asd = selection[i];
         if (asd.annotation == a) {
             if (!asd.contains(locationIdx)) {
                 return SelectionMode::Nothing;
             }
-            bool empty = asd.deselectLocation(locationIdx);
-            if (empty) {
-                selection.removeOne(asd);
+            asdIndex = i;
+            bool theLastOne = asd.contains(locationIdx) && asd.locationIdxList.size() == 1;
+            if (theLastOne) {
                 return SelectionMode::Annotation;
             }
+            break;
         }
     }
     return SelectionMode::Location;

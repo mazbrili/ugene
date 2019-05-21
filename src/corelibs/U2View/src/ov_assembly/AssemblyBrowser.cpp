@@ -33,6 +33,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+#include <U2Core/AnnotationSelection.h>
 #include <U2Core/AppContext.h>
 #include <U2Core/DNAAlphabet.h>
 #include <U2Core/DNASequenceObject.h>
@@ -77,7 +78,6 @@
 #include "annotations/AssemblyAnnotationsArea.h"
 #include "annotations/tree_view/AssemblyAnnotationsTreeView.h"
 #include "annotations/tree_view/AssemblyAnnotationsTreeViewModel.h"
-#include "ABSequenceObjectContext.h"
 #include "AssemblyBrowser.h"
 #include "AssemblyBrowserFactory.h"
 #include "AssemblyBrowserSettings.h"
@@ -141,7 +141,7 @@ void AssemblyBrowser::sl_referenceChanged() {
 
     U2SequenceObject *so = model->getRefObj();
     if (so != nullptr) {
-        model->setSequenceObjectContext(new ABSequenceObjectContext(this, so));
+        addContextToModel(so);
         addObjectToView(so);
     }
     setReferenceAction->setEnabled(!model->isLoadingReference());
@@ -1082,12 +1082,43 @@ void AssemblyBrowser::addAnnotationView(U2SequenceObject* seqObj) {
 }
 
 void AssemblyBrowser::addAnnotationTableObjectToView(AnnotationTableObject* annTableObj) {
-    ABSequenceObjectContext* seqCtx = model->getSequenceObjectContext();
+    SequenceObjectContext* seqCtx = model->getSequenceObjectContext();
     SAFE_POINT(nullptr != seqCtx, "Sequence Object Context is missed", );
     CHECK(!seqCtx->getAnnotationObjects().contains(annTableObj), );
 
     seqCtx->addAnnotationObject(annTableObj);
     addObjectToView(annTableObj);
+}
+
+void AssemblyBrowser::addContextToModel(U2SequenceObject* so) {
+    SequenceObjectContext* ctx = new SequenceObjectContext(so, nullptr);
+    model->setSequenceObjectContext(ctx);
+
+    AssemblyAnnotationsTreeView* annTreeView = ui->getAnnotationsTreeView();
+    SAFE_POINT(nullptr != annTreeView, "Assembly Annotation Tree View is missed", );
+
+    connect(ctx->getAnnotationsSelection(),
+            SIGNAL(si_selectionChanged(AnnotationSelection*,
+                                       const QList<Annotation*>&,
+                                       const QList<Annotation*>&)),
+            annTreeView,
+            SLOT(sl_onAnnotationSelectionChanged(AnnotationSelection*,
+                                                 const QList<Annotation*>&,
+                                                 const QList<Annotation*>&)));
+
+    connect(ctx, SIGNAL(si_clearSelectedAnnotationRegions()),
+            annTreeView, SLOT(sl_clearSelectedAnnotations()));
+
+    QAbstractItemModel* annTreeViewModel = annTreeView->model();
+    SAFE_POINT(nullptr != annTreeViewModel, "Assembly Annotation Tree View Model is missed", );
+
+    connect(ctx, SIGNAL(si_annotationObjectAdded(AnnotationTableObject*)),
+            annTreeViewModel, SLOT(sl_annotationObjectAdded(AnnotationTableObject*)));
+    connect(ctx, SIGNAL(si_annotationObjectRemoved(AnnotationTableObject*)),
+            annTreeViewModel, SLOT(sl_annotationObjectRemoved(AnnotationTableObject*)));
+
+    connect(model.data(), SIGNAL(si_contextChanged(SequenceObjectContext*)),
+            annTreeViewModel, SLOT(sl_contextChanged(SequenceObjectContext*)));
 }
 
 void AssemblyBrowser::sl_setReference() {

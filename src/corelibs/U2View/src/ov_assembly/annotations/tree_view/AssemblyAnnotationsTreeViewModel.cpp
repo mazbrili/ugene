@@ -112,10 +112,10 @@ QModelIndex AssemblyAnnotationsTreeViewModel::getAnnotationModelIndex(Annotation
     return indexAnnotationMap.key(annotation, QModelIndex());
 }
 
-QModelIndexList AssemblyAnnotationsTreeViewModel::getIndexListByAnnotationList(const QList<Annotation*>& abbotationList) const {
+QModelIndexList AssemblyAnnotationsTreeViewModel::getIndexListByAnnotationList(const QList<Annotation*>& annotationList) const {
     QModelIndexList result;
-    foreach(Annotation* ann, abbotationList) {
-        QModelIndex annIndex = getAnnotationModelIndex(ann);
+    foreach(Annotation* ann, annotationList) {
+        QModelIndex annIndex = indexAnnotationMap.key(ann, QModelIndex());
         CHECK_CONTINUE(QModelIndex() != annIndex);
 
         result << annIndex;
