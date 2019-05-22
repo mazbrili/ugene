@@ -186,7 +186,6 @@ void AnnotationSelection::addToSelection(Annotation *a, int locationIdx) {
     switch (mode) {
     case SelectionMode::Nothing:
         return;
-        break;
     case SelectionMode::Location:
         SAFE_POINT(0 <= asdIndex && asdIndex < selection.size(), "Unexpected Annotation Selection Data", );
         selection[asdIndex].addLocation(locationIdx);
@@ -429,6 +428,9 @@ AnnotationSelection::SelectionMode AnnotationSelection::getSelectionMode(Annotat
 }
 
 AnnotationSelection::SelectionMode AnnotationSelection::getDeselectionMode(Annotation *a, const int locationIdx, int& asdIndex) const {
+    const int nRegionsTotal = a->getRegions().size();
+    SAFE_POINT(locationIdx >= -1 && locationIdx < nRegionsTotal, "Invalid location index!", SelectionMode::Nothing);
+
     for (int i = 0; i < selection.size(); i++) {
         const AnnotationSelectionData& asd = selection[i];
         if (asd.annotation == a) {
@@ -437,7 +439,8 @@ AnnotationSelection::SelectionMode AnnotationSelection::getDeselectionMode(Annot
             }
             asdIndex = i;
             bool theLastOne = asd.contains(locationIdx) && asd.locationIdxList.size() == 1;
-            if (theLastOne) {
+            bool allAnnotationRegions = locationIdx == -1 && asd.locationIdxList.size() == nRegionsTotal;
+            if (theLastOne || allAnnotationRegions) {
                 return SelectionMode::Annotation;
             }
             break;
