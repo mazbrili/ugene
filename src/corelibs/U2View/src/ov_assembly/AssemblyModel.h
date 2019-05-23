@@ -34,7 +34,6 @@ namespace U2 {
 class AnnotationTableObject;
 class Document;
 class SequenceObjectContext;
-class SequenceObjectContext;
 class Task;
 class U2SequenceObject;
 class VariantTrackObject;

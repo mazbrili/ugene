@@ -33,7 +33,7 @@
 namespace U2 {
 
 AssemblyAnnotationsTreeView::AssemblyAnnotationsTreeView(QWidget *parent) : QTreeView(parent),
-                                                                            selectionChangedFromOutside(true) {
+                                                                            selectionChangedFromOutside(false) {
     setModel(new AssemblyAnnotationsTreeViewModel(this));
     setSelectionMode(ExtendedSelection);
 }
@@ -56,7 +56,7 @@ void AssemblyAnnotationsTreeView::keyPressEvent(QKeyEvent *e) {
 }
 
 void AssemblyAnnotationsTreeView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    if (selectionChangedFromOutside) {
+    if (!selectionChangedFromOutside) {
         AssemblyAnnotationsTreeViewModel* treeViewModel = getModel();
         CHECK(nullptr != treeViewModel, );
 
@@ -82,10 +82,10 @@ void AssemblyAnnotationsTreeView::sl_onAnnotationSelectionChanged(AnnotationSele
     QItemSelection selected = AssemblyAnnotationsAreaUtils::getSelectionFromIndexList(toAdd);
     QItemSelection deselected = AssemblyAnnotationsAreaUtils::getSelectionFromIndexList(toRemove);
 
-    selectionChangedFromOutside = false;
+    selectionChangedFromOutside = true;
     selModel->select(selected, QItemSelectionModel::Select | QItemSelectionModel::Rows);
     selModel->select(deselected, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
-    selectionChangedFromOutside = true;
+    selectionChangedFromOutside = false;
 }
 
 void AssemblyAnnotationsTreeView::sl_clearSelectedAnnotations() {

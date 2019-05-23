@@ -29,7 +29,7 @@ namespace U2 {
 
 class Annotation;
 class AnnotationSelection;
-    class AssemblyAnnotationsTreeViewModel;
+class AssemblyAnnotationsTreeViewModel;
 
 class AssemblyAnnotationsTreeView : public QTreeView {
 Q_OBJECT
